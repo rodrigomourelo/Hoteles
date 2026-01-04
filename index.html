@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Guest Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: flex-end; z-index: 50; backdrop-filter: blur(2px); }
+        .modal.active { display: flex; }
+        #confirmModal { align-items: center; justify-content: center; }
+        .service-card:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center p-6 pb-20">
+
+    <div class="w-full max-w-md flex justify-between items-center mb-8">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">H</div>
+            <h2 class="font-semibold text-slate-800">Grand Hotel</h2>
+        </div>
+        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
+    </div>
+
+    <div class="w-full max-w-md mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight text-center sm:text-left">Hello,<br>How can we help?</h1>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+        <button onclick="openModal('cleaningModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl">🧹</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Housekeeping</h3>
+        </button>
+
+        <button onclick="openModal('techModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-2xl">🛠️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Maintenance</h3>
+        </button>
+
+        <button onclick="openModal('foodModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-2xl">🍽️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Room Service</h3>
+        </button>
+
+        <button onclick="openModal('frontModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl">🛎️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Front Desk</h3>
+        </button>
+    </div>
+
+    <div id="cleaningModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-emerald-600">Housekeeping</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Towels or Toilet Paper', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧻 Towels or Toilet Paper</button>
+                <button onclick="confirmRequest('Soap or Amenities', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧴 Soap or Amenities</button>
+                <button onclick="confirmRequest('Room Cleaning', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧹 Room Cleaning</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="techModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-rose-600">Maintenance</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Air Conditioning', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">❄️ Air Conditioning</button>
+                <button onclick="confirmRequest('Wi-Fi / TV Issues', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">📡 Wi-Fi / TV Issues</button>
+                <button onclick="confirmRequest('Plumbing', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚰 Plumbing</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="foodModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-amber-600">Room Service</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Food Menu', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🍕 Food Menu</button>
+                <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
+                <button onclick="confirmRequest('Drinks Menu', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🍷 Drinks Menu</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="frontModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-indigo-600">Front Desk</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Late Checkout', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🕒 Late Checkout</button>
+                <button onclick="confirmRequest('Request a Car', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚗 Request a Car</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="bg-white w-[90%] max-w-sm rounded-[32px] p-8 shadow-2xl text-center">
+            <div class="text-4xl mb-4">🛎️</div>
+            <h3 id="confirmText" class="text-lg font-semibold text-slate-800 mb-6 leading-tight"></h3>
+            <div class="flex gap-3">
+                <button onclick="closeAllModals()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold">Cancel</button>
+                <button id="sendBtn" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
+
+        let selectedService = "";
+        let selectedCategory = "";
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if(modal) modal.classList.add('active');
+        }
+
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+        }
+
+        function confirmRequest(service, category) {
+            selectedService = service;
+            selectedCategory = category;
+            document.getElementById('confirmText').innerText = `Requesting ${service} for Room 101... Click to confirm.`;
+            closeAllModals();
+            openModal('confirmModal');
+            document.getElementById('sendBtn').onclick = sendToSupabase;
+        }
+
+        async function sendToSupabase() {
+            const btn = document.getElementById('sendBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "Sending...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=minimal'
+                    },
+                    body: JSON.stringify({
+                        room: '101',
+                        category: selectedCategory,
+                        service: selectedService,
+                        status: 'pending'
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('confirmText').innerText = "Request Sent Successfully! ✅";
+                    btn.style.display = 'none';
+                    setTimeout(() => {
+                        closeAllModals();
+                        setTimeout(() => {
+                            location.reload(); 
+                        }, 500);
+                    }, 2000);
+                } else {
+                    const errorData = await response.json();
+                    alert("Error: " + errorData.message);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
+            } catch (error) {
+                alert("Connection Error. Check your internet.");
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
