@@ -21,7 +21,7 @@
             <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">H</div>
             <h2 class="font-semibold text-slate-800">Grand Hotel</h2>
         </div>
-        <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
+        <span id="roomDisplay" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
     </div>
 
     <div class="w-full max-w-md mb-8">
@@ -116,6 +116,13 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
+        // --- Lógica de la habitación ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentRoom = urlParams.get('room') || '101';
+        
+        // Actualizamos el número en la pantalla apenas carga la página
+        document.getElementById('roomDisplay').innerText = `Room ${currentRoom}`;
+
         let selectedService = "";
         let selectedCategory = "";
 
@@ -131,7 +138,7 @@
         function confirmRequest(service, category) {
             selectedService = service;
             selectedCategory = category;
-            document.getElementById('confirmText').innerText = `Requesting ${service} for Room 101... Click to confirm.`;
+            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${currentRoom}... Click to confirm.`;
             closeAllModals();
             openModal('confirmModal');
             document.getElementById('sendBtn').onclick = sendToSupabase;
@@ -153,7 +160,7 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        room: '101',
+                        room: currentRoom, // Ahora usa la variable dinámica
                         category: selectedCategory,
                         service: selectedService,
                         status: 'pending'
