@@ -14,7 +14,6 @@
             100% { background-color: #fefce8; }
         }
         .new-request { animation: pulse-yellow 2s infinite; }
-        /* Pantalla de bloqueo */
         #loginOverlay { position: fixed; inset: 0; background: #0f172a; z-index: 100; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -24,31 +23,27 @@
         <div class="bg-white p-8 rounded-[32px] shadow-2xl max-w-sm w-full text-center">
             <div class="text-4xl mb-4">🔐</div>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Staff Access</h2>
-            <p class="text-slate-500 mb-6 text-sm">Please enter your access code</p>
-            <input type="password" id="pinInput" placeholder="Enter PIN" class="w-full text-center text-2xl tracking-[1em] p-4 border rounded-2xl mb-4 focus:outline-none focus:border-indigo-600">
-            <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition">Unlock Dashboard</button>
-            <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden">Invalid Code. Try again.</p>
+            <p class="text-slate-500 mb-6 text-sm">Gran Hotel Porto - Private Panel</p>
+            <input type="password" id="pinInput" placeholder="PIN CODE" class="w-full text-center text-2xl p-4 border rounded-2xl mb-4 focus:outline-none focus:border-indigo-600 bg-slate-50">
+            <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg active:scale-95 transition shadow-lg shadow-indigo-200">Unlock</button>
+            <p id="errorMsg" class="text-red-500 mt-4 text-sm hidden">Invalid PIN. Try again.</p>
         </div>
     </div>
 
-    <div id="dashboardContent" class="max-w-4xl mx-auto opacity-0 transition-opacity duration-500">
+    <div id="dashboardContent" class="max-w-4xl mx-auto hidden">
         <header class="flex justify-between items-center mb-8">
             <div>
-                <h1 id="headerHotelName" class="text-2xl font-bold text-slate-800 uppercase tracking-tight">Admin Dashboard</h1>
-                <div class="flex items-center gap-2">
-                    <span id="connectionStatus" class="text-[10px] font-bold text-green-600 uppercase">● Live System</span>
-                </div>
+                <h1 id="headerHotelName" class="text-2xl font-bold text-slate-800">Admin Dashboard</h1>
+                <span class="text-[10px] font-bold text-green-600 uppercase tracking-widest">● System Live</span>
             </div>
-            <div class="flex items-center gap-3">
-                <button id="audioToggle" onclick="enableAudio()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-[10px] font-bold flex items-center gap-2">
-                    🔈 ENABLE AUDIO
-                </button>
-                <button onclick="logout()" class="text-slate-400 hover:text-red-500 text-xs font-bold px-2">LOGOUT</button>
+            <div class="flex items-center gap-4">
+                <button id="audioToggle" onclick="enableAudio()" class="bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-[10px] font-bold">🔈 ENABLE SOUND</button>
+                <button onclick="logout()" class="bg-slate-200 text-slate-600 px-4 py-2 rounded-full text-[10px] font-bold hover:bg-red-100 hover:text-red-600 transition">LOGOUT</button>
             </div>
         </header>
 
         <div id="requestsContainer" class="grid gap-4">
-            <p class="text-slate-500 text-center py-10 italic">Waiting for requests...</p>
+            <p class="text-slate-400 text-center py-10">Loading requests...</p>
         </div>
     </div>
 
@@ -56,10 +51,8 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
         
-        // --- CONFIGURACIÓN DE SEGURIDAD ---
-        const MASTER_PIN = "1234"; // AQUÍ PUEDES CAMBIAR TU CONTRASEÑA
+        const MASTER_PIN = "1234"; // TU PIN
         
-        // --- CONFIGURACIÓN DE HOTEL ---
         const urlParams = new URLSearchParams(window.location.search);
         const hotelName = urlParams.get('hotel') || 'Gran Hotel Porto';
         document.getElementById('headerHotelName').innerText = hotelName.replace(/\+/g, ' ');
@@ -68,44 +61,48 @@
         let audioEnabled = false;
         const bellSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 
-        // Lógica de acceso
+        // Lógica de acceso mejorada
         function checkPin() {
-            const input = document.getElementById('pinInput').value;
-            if(input === MASTER_PIN) {
-                localStorage.setItem('hotel_auth', 'true');
-                unlockDashboard();
+            const val = document.getElementById('pinInput').value;
+            console.log("Checking PIN..."); // Para debug
+            
+            if (val === MASTER_PIN) {
+                localStorage.setItem('hotel_auth_v2', 'true');
+                showDashboard();
             } else {
-                document.getElementById('errorMsg').classList.remove('hidden');
+                const err = document.getElementById('errorMsg');
+                err.classList.remove('hidden');
+                document.getElementById('pinInput').value = "";
             }
         }
 
-        function unlockDashboard() {
-            document.getElementById('loginOverlay').classList.add('hidden');
-            document.getElementById('dashboardContent').classList.replace('opacity-0', 'opacity-100');
+        function showDashboard() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardContent').classList.remove('hidden');
             fetchRequests();
             setInterval(fetchRequests, 5000);
         }
 
         function logout() {
-            localStorage.removeItem('hotel_auth');
+            localStorage.removeItem('hotel_auth_v2');
             location.reload();
         }
 
-        // Auto-login si ya puso la clave antes
-        if(localStorage.getItem('hotel_auth') === 'true') {
-            unlockDashboard();
+        // Auto-login
+        if (localStorage.getItem('hotel_auth_v2') === 'true') {
+            showDashboard();
         }
 
         function enableAudio() {
             audioEnabled = true;
-            document.getElementById('audioToggle').innerText = "🔊 AUDIO ACTIVE";
-            document.getElementById('audioToggle').className = "bg-green-100 text-green-700 px-4 py-2 rounded-full text-[10px] font-bold flex items-center gap-2";
+            const btn = document.getElementById('audioToggle');
+            btn.innerText = "🔊 SOUND ACTIVE";
+            btn.className = "bg-green-100 text-green-700 px-4 py-2 rounded-full text-[10px] font-bold";
             bellSound.play().then(() => { bellSound.pause(); bellSound.currentTime = 0; });
         }
 
         async function fetchRequests() {
             try {
-                // Ahora filtramos por el nombre del hotel para que el Dashboard sea privado
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
@@ -116,7 +113,7 @@
                 }
                 lastRequestCount = data.length;
                 renderRequests(data);
-            } catch (error) { console.error(error); }
+            } catch (error) { console.error("Fetch error:", error); }
         }
 
         async function updateStatus(id, newStatus) {
@@ -135,18 +132,22 @@
         function renderRequests(requests) {
             const container = document.getElementById('requestsContainer');
             container.innerHTML = "";
+            if (requests.length === 0) {
+                container.innerHTML = "<div class='bg-white p-10 rounded-2xl text-center text-slate-400'>No requests yet today.</div>";
+                return;
+            }
             requests.forEach((req, index) => {
                 const isNew = index === 0 && req.status === 'pending';
                 const card = document.createElement('div');
-                card.className = `bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center transition-all status-${req.status} ${isNew ? 'new-request' : ''}`;
+                card.className = `bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center status-${req.status} ${isNew ? 'new-request' : ''}`;
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center gap-3">
                             <span class="text-xl font-black text-slate-900">Room ${req.room}</span>
-                            <span class="text-[10px] font-bold uppercase px-2 py-1 bg-slate-100 rounded-md text-slate-500 tracking-wider">${req.category}</span>
+                            <span class="text-[10px] font-bold uppercase px-2 py-1 bg-slate-100 rounded text-slate-500">${req.category}</span>
                         </div>
                         <p class="text-slate-700 mt-2 text-lg font-medium">${req.service}</p>
-                        <p class="text-[10px] text-slate-400 mt-3 font-semibold">${new Date(req.created_at).toLocaleTimeString()}</p>
+                        <p class="text-[10px] text-slate-400 mt-3 font-semibold uppercase tracking-wider">${new Date(req.created_at).toLocaleTimeString()}</p>
                     </div>
                     <div class="flex gap-2">
                         ${req.status === 'pending' ? `<button onclick="updateStatus(${req.id}, 'ongoing')" class="bg-indigo-600 text-white px-5 py-3 rounded-xl font-bold text-sm">Accept</button>` : ''}
