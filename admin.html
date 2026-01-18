@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Multihotel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .status-pending { border-left: 8px solid #facc15; }
@@ -17,27 +17,26 @@
         <div class="bg-white p-8 rounded-[32px] shadow-2xl max-w-sm w-full text-center">
             <div class="text-4xl mb-4">🔐</div>
             <h2 class="text-2xl font-bold text-slate-800 mb-2">Staff Access</h2>
-            <p class="text-slate-500 mb-6 text-sm">Enter PIN to unlock</p>
-            <input type="text" id="pinInput" placeholder="PIN" class="w-full text-center text-2xl p-4 border rounded-2xl mb-4 focus:outline-none focus:border-indigo-600 bg-slate-50" inputmode="numeric">
-            <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg active:scale-95 transition">Unlock Dashboard</button>
-            <p id="errorMsg" class="text-red-500 mt-4 text-sm" style="display: none;">Invalid PIN. Try again.</p>
+            <p id="loginHotelLabel" class="text-slate-500 mb-6 text-sm font-bold uppercase"></p>
+            <input type="password" id="pinInput" placeholder="PIN" class="w-full text-center text-2xl p-4 border rounded-2xl mb-4 focus:outline-none focus:border-indigo-600 bg-slate-50" inputmode="numeric">
+            <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-bold text-lg active:scale-95 transition">Unlock</button>
+            <p id="errorMsg" class="text-red-500 mt-4 text-sm" style="display: none;">Invalid PIN.</p>
         </div>
     </div>
 
     <div id="dashboardContent" style="display: none;" class="max-w-4xl mx-auto">
         <header class="flex justify-between items-center mb-8">
             <div>
-                <h1 id="headerHotelName" class="text-2xl font-bold text-slate-800 tracking-tight">Admin Dashboard</h1>
+                <h1 id="headerHotelName" class="text-2xl font-bold text-slate-800 tracking-tight tracking-tighter"></h1>
                 <span class="text-[10px] font-bold text-green-600 uppercase">● Live System</span>
             </div>
-            <div class="flex items-center gap-2 sm:gap-4">
-                <button id="audioToggle" onclick="enableAudio()" class="bg-amber-100 text-amber-700 px-3 py-2 rounded-full text-[10px] font-bold italic">🔈 AUDIO OFF</button>
-                <button onclick="logout()" class="bg-slate-200 text-slate-600 px-3 py-2 rounded-full text-[10px] font-bold hover:bg-red-500 hover:text-white transition">LOGOUT</button>
+            <div class="flex items-center gap-2">
+                <button id="audioToggle" onclick="enableAudio()" class="bg-amber-100 text-amber-700 px-3 py-2 rounded-full text-[10px] font-bold">🔈 AUDIO OFF</button>
+                <button onclick="logout()" class="bg-slate-200 text-slate-600 px-3 py-2 rounded-full text-[10px] font-bold">LOGOUT</button>
             </div>
         </header>
 
-        <div id="requestsContainer" class="grid gap-4">
-            </div>
+        <div id="requestsContainer" class="grid gap-4"></div>
     </div>
 
     <script>
@@ -45,10 +44,17 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
         const MASTER_PIN = "1234";
 
+        // Obtener el nombre del hotel de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentHotel = urlParams.get('hotel') || 'Hotel Genérico';
+        const cleanHotelName = currentHotel.replace(/\+/g, ' ');
+
+        document.getElementById('headerHotelName').innerText = cleanHotelName;
+        document.getElementById('loginHotelLabel').innerText = cleanHotelName;
+
         function checkPin() {
-            const val = document.getElementById('pinInput').value;
-            if (val === MASTER_PIN) {
-                localStorage.setItem('auth_v3', 'ok');
+            if (document.getElementById('pinInput').value === MASTER_PIN) {
+                localStorage.setItem('auth_v4_' + cleanHotelName, 'ok'); // Sesión única por hotel
                 showDashboard();
             } else {
                 document.getElementById('errorMsg').style.display = 'block';
@@ -57,29 +63,21 @@
         }
 
         function showDashboard() {
-            // Usamos .style.display directamente para evitar errores de clases
             document.getElementById('loginOverlay').style.display = 'none';
             document.getElementById('dashboardContent').style.display = 'block';
-            
-            const urlParams = new URLSearchParams(window.location.search);
-            const hotelName = urlParams.get('hotel') || 'Gran Hotel Porto';
-            document.getElementById('headerHotelName').innerText = hotelName.replace(/\+/g, ' ');
-            
             fetchRequests();
             setInterval(fetchRequests, 5000);
         }
 
         function logout() {
-            localStorage.removeItem('auth_v3');
+            localStorage.removeItem('auth_v4_' + cleanHotelName);
             window.location.reload();
         }
 
-        // Auto-login
-        if (localStorage.getItem('auth_v3') === 'ok') {
+        if (localStorage.getItem('auth_v4_' + cleanHotelName) === 'ok') {
             showDashboard();
         }
 
-        // --- Resto de funciones (Audio y Supabase) ---
         let lastRequestCount = -1;
         let audioEnabled = false;
         const bellSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -93,10 +91,12 @@
 
         async function fetchRequests() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&order=created_at.desc`, {
+                // AQUÍ ESTÁ EL FILTRO CLAVE: &hotel=eq.NombreDelHotel
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?hotel=eq.${currentHotel}&select=*&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 const data = await response.json();
+                
                 if (lastRequestCount !== -1 && data.length > lastRequestCount && audioEnabled) {
                     bellSound.play();
                 }
@@ -116,14 +116,18 @@
 
         function renderRequests(requests) {
             const container = document.getElementById('requestsContainer');
-            container.innerHTML = requests.length === 0 ? "<p class='text-center py-10'>No requests.</p>" : "";
+            if (requests.length === 0) {
+                container.innerHTML = `<div class="bg-white p-10 rounded-2xl text-center text-slate-400">No hay pedidos pendientes para ${cleanHotelName}.</div>`;
+                return;
+            }
+            container.innerHTML = "";
             requests.forEach(req => {
                 const card = document.createElement('div');
                 card.className = `bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center status-${req.status}`;
                 card.innerHTML = `
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xl font-black italic">Room ${req.room}</span>
+                            <span class="text-xl font-black">Room ${req.room}</span>
                             <span class="text-[9px] font-bold uppercase bg-slate-100 px-2 py-1 rounded text-slate-500">${req.category}</span>
                         </div>
                         <p class="text-slate-700 font-medium text-lg mt-1">${req.service}</p>
