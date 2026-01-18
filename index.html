@@ -89,11 +89,22 @@
                     </div>
                     <div class="flex gap-2">
                         <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800 placeholder:text-slate-400">
-                        <button onclick="sendFoodOrder()" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
+                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
                     </div>
                 </div>
+
+                <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
+                    <div class="flex items-center gap-2 font-semibold text-slate-700">
+                        <span>🍷</span>
+                        <span>Drinks Menu</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800 placeholder:text-slate-400">
+                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
+                    </div>
+                </div>
+
                 <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
-                <button onclick="confirmRequest('Drinks Menu', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🍷 Drinks Menu</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
             </div>
         </div>
@@ -143,9 +154,9 @@
             document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
         }
 
-        // Nueva función para enviar el pedido de comida por número
-        function sendFoodOrder() {
-            const input = document.getElementById('foodInput');
+        // Función unificada para pedidos manuales (Comida o Bebida)
+        function sendManualOrder(inputId, label) {
+            const input = document.getElementById(inputId);
             const items = input.value.trim();
             
             if(!items) {
@@ -153,10 +164,7 @@
                 return;
             }
 
-            // Usamos la misma lógica, pero el 'servicio' ahora incluye los números
-            confirmRequest(`Order: ${items}`, 'food');
-            
-            // Limpiamos el campo después
+            confirmRequest(`${label}: ${items}`, 'food');
             input.value = "";
         }
 
