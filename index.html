@@ -19,13 +19,13 @@
     <div class="w-full max-w-md flex justify-between items-center mb-8">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">H</div>
-            <h2 id="hotelDisplay" class="font-semibold text-slate-800 tracking-tight">Grand Hotel</h2>
+            <h2 id="hotelDisplayName" class="font-semibold text-slate-800 tracking-tight text-lg">Grand Hotel</h2>
         </div>
-        <span id="roomDisplay" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
+        <span id="roomDisplayName" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
     </div>
 
-    <div class="w-full max-w-md mb-8 text-center sm:text-left">
-        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight">Hello,<br>How can we help?</h1>
+    <div class="w-full max-w-md mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight text-center sm:text-left">Hello,<br>How can we help?</h1>
     </div>
 
     <div class="grid grid-cols-2 gap-4 w-full max-w-md">
@@ -33,17 +33,14 @@
             <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl">🧹</div>
             <h3 class="font-semibold text-slate-800 tracking-tight">Housekeeping</h3>
         </button>
-
         <button onclick="openModal('techModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
             <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-2xl">🛠️</div>
             <h3 class="font-semibold text-slate-800 tracking-tight">Maintenance</h3>
         </button>
-
         <button onclick="openModal('foodModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
             <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-2xl">🍽️</div>
             <h3 class="font-semibold text-slate-800 tracking-tight">Room Service</h3>
         </button>
-
         <button onclick="openModal('frontModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
             <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl">🛎️</div>
             <h3 class="font-semibold text-slate-800 tracking-tight">Front Desk</h3>
@@ -128,16 +125,17 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // LÓGICA DINÁMICA DE URL
+        // CAPTURA DE DATOS DE LA URL
         const urlParams = new URLSearchParams(window.location.search);
         
-        // 1. Número de habitación
-        const currentRoom = urlParams.get('room') || '101';
-        document.getElementById('roomDisplay').innerText = `Room ${currentRoom}`;
+        // 1. Habitación (ID: roomDisplayName)
+        const roomVal = urlParams.get('room') || '101';
+        document.getElementById('roomDisplayName').innerText = `Room ${roomVal}`;
 
-        // 2. Nombre del Hotel
-        const hotelName = urlParams.get('hotel') || 'Grand Hotel';
-        document.getElementById('hotelDisplay').innerText = hotelName;
+        // 2. Hotel (ID: hotelDisplayName)
+        const hotelVal = urlParams.get('hotel') || 'Grand Hotel';
+        // Limpiamos los "+" por espacios si los hay
+        document.getElementById('hotelDisplayName').innerText = hotelVal.replace(/\+/g, ' ');
 
         let selectedService = "";
         let selectedCategory = "";
@@ -154,7 +152,7 @@
         function sendManualOrder(inputId, label) {
             const input = document.getElementById(inputId);
             const items = input.value.trim();
-            if(!items) { alert("Please enter the menu number(s)."); return; }
+            if(!items) { alert("Please enter numbers."); return; }
             confirmRequest(`${label}: ${items}`, 'food');
             input.value = "";
         }
@@ -162,7 +160,7 @@
         function confirmRequest(service, category) {
             selectedService = service;
             selectedCategory = category;
-            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${currentRoom} at ${hotelName}...`;
+            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${roomVal}...`;
             closeAllModals();
             openModal('confirmModal');
             document.getElementById('sendBtn').onclick = sendToSupabase;
@@ -183,7 +181,7 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        room: currentRoom,
+                        room: roomVal,
                         category: selectedCategory,
                         service: selectedService,
                         status: 'pending'
@@ -191,16 +189,15 @@
                 });
 
                 if (response.ok) {
-                    document.getElementById('confirmText').innerText = "Request Sent Successfully! ✅";
+                    document.getElementById('confirmText').innerText = "Request Sent! ✅";
                     btn.style.display = 'none';
                     setTimeout(() => { location.reload(); }, 2000);
                 } else {
-                    alert("Error sending request.");
+                    alert("Error.");
                     btn.disabled = false;
-                    btn.innerText = "Confirm";
                 }
             } catch (error) {
-                alert("Connection Error.");
+                alert("Error.");
                 btn.disabled = false;
             }
         }
