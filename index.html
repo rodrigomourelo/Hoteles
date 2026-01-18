@@ -19,13 +19,13 @@
     <div class="w-full max-w-md flex justify-between items-center mb-8">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">H</div>
-            <h2 class="font-semibold text-slate-800">Grand Hotel</h2>
+            <h2 id="hotelDisplay" class="font-semibold text-slate-800 tracking-tight">Grand Hotel</h2>
         </div>
         <span id="roomDisplay" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
     </div>
 
-    <div class="w-full max-w-md mb-8">
-        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight text-center sm:text-left">Hello,<br>How can we help?</h1>
+    <div class="w-full max-w-md mb-8 text-center sm:text-left">
+        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight">Hello,<br>How can we help?</h1>
     </div>
 
     <div class="grid grid-cols-2 gap-4 w-full max-w-md">
@@ -81,29 +81,20 @@
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-6 text-center text-amber-600">Room Service</h3>
             <div class="grid gap-3">
-                
                 <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
-                    <div class="flex items-center gap-2 font-semibold text-slate-700">
-                        <span>🍕</span>
-                        <span>Food Menu</span>
-                    </div>
+                    <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍕</span><span>Food Menu</span></div>
                     <div class="flex gap-2">
-                        <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800 placeholder:text-slate-400">
-                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
+                        <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
+                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
                     </div>
                 </div>
-
                 <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
-                    <div class="flex items-center gap-2 font-semibold text-slate-700">
-                        <span>🍷</span>
-                        <span>Drinks Menu</span>
-                    </div>
+                    <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍷</span><span>Drinks Menu</span></div>
                     <div class="flex gap-2">
-                        <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800 placeholder:text-slate-400">
-                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
+                        <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
+                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
                     </div>
                 </div>
-
                 <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
             </div>
@@ -137,10 +128,16 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
+        // LÓGICA DINÁMICA DE URL
         const urlParams = new URLSearchParams(window.location.search);
-        const currentRoom = urlParams.get('room') || '101';
         
+        // 1. Número de habitación
+        const currentRoom = urlParams.get('room') || '101';
         document.getElementById('roomDisplay').innerText = `Room ${currentRoom}`;
+
+        // 2. Nombre del Hotel
+        const hotelName = urlParams.get('hotel') || 'Grand Hotel';
+        document.getElementById('hotelDisplay').innerText = hotelName;
 
         let selectedService = "";
         let selectedCategory = "";
@@ -154,16 +151,10 @@
             document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
         }
 
-        // Función unificada para pedidos manuales (Comida o Bebida)
         function sendManualOrder(inputId, label) {
             const input = document.getElementById(inputId);
             const items = input.value.trim();
-            
-            if(!items) {
-                alert("Please enter the menu number(s).");
-                return;
-            }
-
+            if(!items) { alert("Please enter the menu number(s)."); return; }
             confirmRequest(`${label}: ${items}`, 'food');
             input.value = "";
         }
@@ -171,7 +162,7 @@
         function confirmRequest(service, category) {
             selectedService = service;
             selectedCategory = category;
-            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${currentRoom}... Click to confirm.`;
+            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${currentRoom} at ${hotelName}...`;
             closeAllModals();
             openModal('confirmModal');
             document.getElementById('sendBtn').onclick = sendToSupabase;
@@ -179,7 +170,6 @@
 
         async function sendToSupabase() {
             const btn = document.getElementById('sendBtn');
-            const originalText = btn.innerText;
             btn.innerText = "Sending...";
             btn.disabled = true;
 
@@ -203,21 +193,14 @@
                 if (response.ok) {
                     document.getElementById('confirmText').innerText = "Request Sent Successfully! ✅";
                     btn.style.display = 'none';
-                    setTimeout(() => {
-                        closeAllModals();
-                        setTimeout(() => {
-                            location.reload(); 
-                        }, 500);
-                    }, 2000);
+                    setTimeout(() => { location.reload(); }, 2000);
                 } else {
-                    const errorData = await response.json();
-                    alert("Error: " + errorData.message);
-                    btn.innerText = originalText;
+                    alert("Error sending request.");
                     btn.disabled = false;
+                    btn.innerText = "Confirm";
                 }
             } catch (error) {
-                alert("Connection Error. Check your internet.");
-                btn.innerText = originalText;
+                alert("Connection Error.");
                 btn.disabled = false;
             }
         }
