@@ -1,35 +1,123 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servicio al Huésped - Gran Hotel Porto</title>
+    <title>Hotel Guest Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); align-items: flex-end; z-index: 50; backdrop-filter: blur(2px); }
+        .modal.active { display: flex; }
+        #confirmModal { align-items: center; justify-content: center; }
+        .service-card:active { transform: scale(0.95); }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen flex flex-col items-center p-6 pb-20">
 
-    <div class="max-w-md mx-auto min-h-screen flex flex-col p-6">
-        <header class="py-8 text-center">
-            <h1 id="hotelDisplay" class="text-2xl font-black uppercase tracking-tighter text-indigo-600">Hotel</h1>
-            <p class="text-slate-500 font-medium">Room <span id="roomDisplay" class="text-slate-900">...</span></p>
-        </header>
+    <div class="w-full max-w-md flex justify-between items-center mb-8">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">H</div>
+            <h2 id="hotelDisplayName" class="font-semibold text-slate-800 tracking-tight text-lg">Grand Hotel</h2>
+        </div>
+        <span id="roomDisplayName" class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Room 101</span>
+    </div>
 
-        <div class="bg-white rounded-[32px] shadow-xl shadow-slate-200/50 p-8 flex-grow">
-            <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">¿En qué podemos ayudarte?</label>
-            
-            <div class="grid gap-3 mb-6">
-                <button onclick="selectService(this)" class="service-btn w-full p-4 rounded-2xl border-2 border-slate-100 text-left font-bold transition-all hover:border-indigo-200 active:scale-95 text-slate-700">🧹 Limpieza de habitación</button>
-                <button onclick="selectService(this)" class="service-btn w-full p-4 rounded-2xl border-2 border-slate-100 text-left font-bold transition-all hover:border-indigo-200 active:scale-95 text-slate-700">☕ Desayuno a la habitación</button>
-                <button onclick="selectService(this)" class="service-btn w-full p-4 rounded-2xl border-2 border-slate-100 text-left font-bold transition-all hover:border-indigo-200 active:scale-95 text-slate-700">🧼 Toallas limpias</button>
+    <div class="w-full max-w-md mb-8">
+        <h1 class="text-3xl font-bold text-slate-900 leading-tight tracking-tight text-center sm:text-left">Hello,<br>How can we help?</h1>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 w-full max-w-md">
+        <button onclick="openModal('cleaningModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-2xl">🧹</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Housekeeping</h3>
+        </button>
+        <button onclick="openModal('techModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-rose-50 rounded-2xl flex items-center justify-center text-2xl">🛠️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Maintenance</h3>
+        </button>
+        <button onclick="openModal('foodModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-amber-50 rounded-2xl flex items-center justify-center text-2xl">🍽️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Room Service</h3>
+        </button>
+        <button onclick="openModal('frontModal')" class="service-card bg-white p-5 rounded-[28px] shadow-sm border border-slate-100 flex flex-col items-start gap-4 transition text-left">
+            <div class="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-2xl">🛎️</div>
+            <h3 class="font-semibold text-slate-800 tracking-tight">Front Desk</h3>
+        </button>
+    </div>
+
+    <div id="cleaningModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-emerald-600">Housekeeping</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Towels or Toilet Paper', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧻 Towels or Toilet Paper</button>
+                <button onclick="confirmRequest('Soap or Amenities', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧴 Soap or Amenities</button>
+                <button onclick="confirmRequest('Room Cleaning', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧹 Room Cleaning</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
             </div>
+        </div>
+    </div>
 
-            <textarea id="customRequest" placeholder="¿Alguna otra solicitud especial?" class="w-full p-4 bg-slate-50 rounded-2xl border-none focus:ring-2 focus:ring-indigo-500 mb-6 min-h-[100px] font-medium"></textarea>
+    <div id="techModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-rose-600">Maintenance</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Air Conditioning', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">❄️ Air Conditioning</button>
+                <button onclick="confirmRequest('Wi-Fi / TV Issues', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">📡 Wi-Fi / TV Issues</button>
+                <button onclick="confirmRequest('Plumbing', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚰 Plumbing</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-            <button id="sendBtn" onclick="sendRequest()" class="w-full bg-indigo-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-indigo-200 active:scale-95 transition-all">
-                ENVIAR SOLICITUD
-            </button>
-            
-            <p id="statusMsg" class="mt-4 text-center text-sm font-bold text-emerald-500 hidden">¡Solicitud enviada con éxito! 🛎️</p>
+    <div id="foodModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-amber-600">Room Service</h3>
+            <div class="grid gap-3">
+                <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
+                    <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍕</span><span>Food Menu</span></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
+                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                    </div>
+                </div>
+                <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
+                    <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍷</span><span>Drinks Menu</span></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
+                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                    </div>
+                </div>
+                <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="frontModal" class="modal" onclick="closeAllModals()">
+        <div class="bg-white w-full rounded-t-[32px] p-8" onclick="event.stopPropagation()">
+            <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold mb-6 text-center text-indigo-600">Front Desk</h3>
+            <div class="grid gap-3">
+                <button onclick="confirmRequest('Late Checkout', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🕒 Late Checkout</button>
+                <button onclick="confirmRequest('Request a Car', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚗 Request a Car</button>
+                <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="bg-white w-[90%] max-w-sm rounded-[32px] p-8 shadow-2xl text-center">
+            <div class="text-4xl mb-4">🛎️</div>
+            <h3 id="confirmText" class="text-lg font-semibold text-slate-800 mb-6 leading-tight"></h3>
+            <div class="flex gap-3">
+                <button onclick="closeAllModals()" class="flex-1 py-4 bg-slate-100 text-slate-500 rounded-2xl font-bold">Cancel</button>
+                <button id="sendBtn" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200">Confirm</button>
+            </div>
         </div>
     </div>
 
@@ -37,42 +125,51 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // Obtener datos de la URL
-        const params = new URLSearchParams(window.location.search);
-        const room = params.get('room') || '000';
-        const rawHotel = params.get('hotel') || 'Gran Hotel Porto';
-        // Limpiamos el nombre del hotel para que no tenga signos de "+"
-        const hotelName = decodeURIComponent(rawHotel).replace(/\+/g, ' ');
+        // CAPTURA DE DATOS DE LA URL
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 1. Habitación (ID: roomDisplayName)
+        const roomVal = urlParams.get('room') || '101';
+        document.getElementById('roomDisplayName').innerText = `Room ${roomVal}`;
 
-        // Mostrar datos en pantalla
-        document.getElementById('roomDisplay').innerText = room;
-        document.getElementById('hotelDisplay').innerText = hotelName;
+        // 2. Hotel (ID: hotelDisplayName)
+        const hotelVal = urlParams.get('hotel') || 'Grand Hotel';
+        // Limpiamos los "+" por espacios si los hay
+        document.getElementById('hotelDisplayName').innerText = hotelVal.replace(/\+/g, ' ');
 
         let selectedService = "";
+        let selectedCategory = "";
 
-        function selectService(btn) {
-            // Deseleccionar otros
-            document.querySelectorAll('.service-btn').forEach(b => b.classList.replace('border-indigo-600', 'border-slate-100'));
-            document.querySelectorAll('.service-btn').forEach(b => b.classList.remove('bg-indigo-50'));
-            
-            // Seleccionar este
-            btn.classList.replace('border-slate-100', 'border-indigo-600');
-            btn.classList.add('bg-indigo-50');
-            selectedService = btn.innerText;
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if(modal) modal.classList.add('active');
         }
 
-        async function sendRequest() {
-            const custom = document.getElementById('customRequest').value;
-            const finalService = selectedService + (custom ? " - Obs: " + custom : "");
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+        }
+
+        function sendManualOrder(inputId, label) {
+            const input = document.getElementById(inputId);
+            const items = input.value.trim();
+            if(!items) { alert("Please enter numbers."); return; }
+            confirmRequest(`${label}: ${items}`, 'food');
+            input.value = "";
+        }
+
+        function confirmRequest(service, category) {
+            selectedService = service;
+            selectedCategory = category;
+            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${roomVal}...`;
+            closeAllModals();
+            openModal('confirmModal');
+            document.getElementById('sendBtn').onclick = sendToSupabase;
+        }
+
+        async function sendToSupabase() {
             const btn = document.getElementById('sendBtn');
-
-            if (!selectedService && !custom) {
-                alert("Por favor selecciona un servicio o escribe uno.");
-                return;
-            }
-
+            btn.innerText = "Sending...";
             btn.disabled = true;
-            btn.innerText = "ENVIANDO...";
 
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests`, {
@@ -84,23 +181,24 @@
                         'Prefer': 'return=minimal'
                     },
                     body: JSON.stringify({
-                        room: room,
-                        hotel: hotelName, // Enviamos el nombre limpio
-                        service: finalService,
-                        category: selectedService ? "Standard" : "Special",
+                        room: roomVal,
+                        category: selectedCategory,
+                        service: selectedService,
                         status: 'pending'
                     })
                 });
 
                 if (response.ok) {
-                    document.getElementById('statusMsg').classList.remove('hidden');
-                    btn.innerText = "¡ENVIADO!";
-                    setTimeout(() => location.reload(), 3000);
+                    document.getElementById('confirmText').innerText = "Request Sent! ✅";
+                    btn.style.display = 'none';
+                    setTimeout(() => { location.reload(); }, 2000);
+                } else {
+                    alert("Error.");
+                    btn.disabled = false;
                 }
             } catch (error) {
-                alert("Error de conexión. Intenta de nuevo.");
+                alert("Error.");
                 btn.disabled = false;
-                btn.innerText = "ENVIAR SOLICITUD";
             }
         }
     </script>
