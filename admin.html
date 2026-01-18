@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Gran Hotel Porto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-pending { border-left: 8px solid #facc15; } /* Amarillo */
+        .status-ongoing { border-left: 8px solid #3b82f6; } /* Azul */
+        .status-completed { opacity: 0.6; border-left: 8px solid #22c55e; } /* Verde */
+    </style>
+</head>
+<body class="bg-slate-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-slate-800">🛎️ Live Requests</h1>
+            <div id="connectionStatus" class="text-sm text-green-600 font-medium">● Connected Live</div>
+        </header>
+
+        <div id="requestsContainer" class="grid gap-4">
+            <p class="text-slate-500">Loading requests...</p>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
+
+        async function fetchRequests() {
+            const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&order=created_at.desc`, {
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+            });
+            const data = await response.json();
+            renderRequests(data);
+        }
+
+        async function updateStatus(id, newStatus) {
+            await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?id=eq.${id}`, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=minimal'
+                },
+                body: JSON.stringify({ status: newStatus })
+            });
+            fetchRequests(); // Recargar la lista
+        }
+
+        function renderRequests(requests) {
+            const container = document.getElementById('requestsContainer');
+            container.innerHTML = "";
+
+            requests.forEach(req => {
+                const card = document.createElement('div');
+                card.className = `bg-white p-6 rounded-xl shadow-sm flex justify-between items-center status-${req.status}`;
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-lg font-bold text-slate-900">Room ${req.room}</span>
+                            <span class="text-xs font-bold uppercase px-2 py-1 bg-slate-100 rounded text-slate-500">${req.category}</span>
+                        </div>
+                        <p class="text-slate-700 mt-1 text-lg">${req.service}</p>
+                        <p class="text-xs text-slate-400 mt-2">${new Date(req.created_at).toLocaleTimeString()}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        ${req.status === 'pending' ? 
+                            `<button onclick="updateStatus(${req.id}, 'ongoing')" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg font-bold text-sm">Start Process</button>` : ''}
+                        
+                        ${req.status !== 'completed' ? 
+                            `<button onclick="updateStatus(${req.id}, 'completed')" class="bg-green-100 text-green-600 px-4 py-2 rounded-lg font-bold text-sm">Finish</button>` : 
+                            `<span class="text-green-600 font-bold px-4">✓ Done</span>`}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Refrescar cada 10 segundos automáticamente
+        setInterval(fetchRequests, 10000);
+        fetchRequests();
+    </script>
+</body>
+</html>
