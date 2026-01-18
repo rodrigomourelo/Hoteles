@@ -82,14 +82,14 @@
                     <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍕</span><span>Food Menu</span></div>
                     <div class="flex gap-2">
                         <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
-                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                        <button onclick="sendManualOrder('foodInput', 'Food Order', 'food')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
                     </div>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
                     <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍷</span><span>Drinks Menu</span></div>
                     <div class="flex gap-2">
                         <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
-                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                        <button onclick="sendManualOrder('drinkInput', 'Drink Order', 'food')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
                     </div>
                 </div>
                 <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
@@ -103,6 +103,18 @@
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-6 text-center text-indigo-600">Front Desk</h3>
             <div class="grid gap-3">
+                
+                <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
+                    <div class="flex items-center gap-2 font-semibold text-slate-700">
+                        <span>📝</span>
+                        <span>Special Request</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="text" id="specialInput" placeholder="How can we help?" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
+                        <button onclick="sendManualOrder('specialInput', 'Note', 'reception')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200 active:scale-95 transition">Send</button>
+                    </div>
+                </div>
+
                 <button onclick="confirmRequest('Late Checkout', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🕒 Late Checkout</button>
                 <button onclick="confirmRequest('Request a Car', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚗 Request a Car</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 w-full text-center">Cancel</button>
@@ -125,16 +137,11 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // CAPTURA DE DATOS DE LA URL
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // 1. Habitación (ID: roomDisplayName)
         const roomVal = urlParams.get('room') || '101';
         document.getElementById('roomDisplayName').innerText = `Room ${roomVal}`;
 
-        // 2. Hotel (ID: hotelDisplayName)
         const hotelVal = urlParams.get('hotel') || 'Grand Hotel';
-        // Limpiamos los "+" por espacios si los hay
         document.getElementById('hotelDisplayName').innerText = hotelVal.replace(/\+/g, ' ');
 
         let selectedService = "";
@@ -149,18 +156,19 @@
             document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
         }
 
-        function sendManualOrder(inputId, label) {
+        // Función para pedidos manuales mejorada
+        function sendManualOrder(inputId, label, category) {
             const input = document.getElementById(inputId);
-            const items = input.value.trim();
-            if(!items) { alert("Please enter numbers."); return; }
-            confirmRequest(`${label}: ${items}`, 'food');
+            const text = input.value.trim();
+            if(!text) { alert("Please write your request."); return; }
+            confirmRequest(`${label}: ${text}`, category);
             input.value = "";
         }
 
         function confirmRequest(service, category) {
             selectedService = service;
             selectedCategory = category;
-            document.getElementById('confirmText').innerText = `Requesting ${service} for Room ${roomVal}...`;
+            document.getElementById('confirmText').innerText = `Confirm request for Room ${roomVal}?`;
             closeAllModals();
             openModal('confirmModal');
             document.getElementById('sendBtn').onclick = sendToSupabase;
