@@ -52,9 +52,9 @@
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-6 text-center text-emerald-600">Housekeeping</h3>
             <div class="grid gap-3">
-                <button onclick="confirmRequest('Towels or Toilet Paper', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧻 Towels or Toilet Paper</button>
-                <button onclick="confirmRequest('Soap or Amenities', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧴 Soap or Amenities</button>
-                <button onclick="confirmRequest('Room Cleaning', 'cleaning')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧹 Room Cleaning</button>
+                <button onclick="confirmRequest('Towels or Toilet Paper', 'Housekeeping')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧻 Towels or Toilet Paper</button>
+                <button onclick="confirmRequest('Soap or Amenities', 'Housekeeping')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧴 Soap or Amenities</button>
+                <button onclick="confirmRequest('Room Cleaning', 'Housekeeping')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🧹 Room Cleaning</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 text-center">Cancel</button>
             </div>
         </div>
@@ -65,9 +65,9 @@
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-6 text-center text-rose-600">Maintenance</h3>
             <div class="grid gap-3">
-                <button onclick="confirmRequest('Air Conditioning', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">❄️ Air Conditioning</button>
-                <button onclick="confirmRequest('Wi-Fi / TV Issues', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">📡 Wi-Fi / TV Issues</button>
-                <button onclick="confirmRequest('Plumbing', 'repair')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚰 Plumbing</button>
+                <button onclick="confirmRequest('Air Conditioning', 'Maintenance')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">❄️ Air Conditioning</button>
+                <button onclick="confirmRequest('Wi-Fi / TV Issues', 'Maintenance')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">📡 Wi-Fi / TV Issues</button>
+                <button onclick="confirmRequest('Plumbing', 'Maintenance')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚰 Plumbing</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 text-center">Cancel</button>
             </div>
         </div>
@@ -82,17 +82,17 @@
                     <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍕</span><span>Food Menu</span></div>
                     <div class="flex gap-2">
                         <input type="text" id="foodInput" placeholder="Item # (ex: 12, 05)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
-                        <button onclick="sendManualOrder('foodInput', 'Food Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                        <button onclick="sendManualOrder('foodInput', 'Food Order', 'Room Service')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
                     </div>
                 </div>
                 <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100">
                     <div class="flex items-center gap-2 font-semibold text-slate-700"><span>🍷</span><span>Drinks Menu</span></div>
                     <div class="flex gap-2">
                         <input type="text" id="drinkInput" placeholder="Item # (ex: 01, 04)" class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800">
-                        <button onclick="sendManualOrder('drinkInput', 'Drink Order')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
+                        <button onclick="sendManualOrder('drinkInput', 'Drinks Order', 'Room Service')" class="bg-indigo-600 text-white px-5 rounded-xl font-bold shadow-md shadow-indigo-200">Send</button>
                     </div>
                 </div>
-                <button onclick="confirmRequest('Breakfast', 'food')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
+                <button onclick="confirmRequest('Breakfast', 'Room Service')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">☕ Breakfast</button>
                 <button onclick="closeAllModals()" class="mt-2 text-slate-400 font-medium py-2 text-center">Cancel</button>
             </div>
         </div>
@@ -103,14 +103,14 @@
             <div class="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-6 text-center text-indigo-600">Front Desk</h3>
             <div class="grid gap-3">
-                <button onclick="confirmRequest('Late Checkout', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🕒 Late Checkout</button>
-                <button onclick="confirmRequest('Request a Car', 'reception')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚗 Request a Car</button>
+                <button onclick="confirmRequest('Late Checkout', 'Front Desk')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🕒 Late Checkout</button>
+                <button onclick="confirmRequest('Request a Car', 'Front Desk')" class="bg-slate-50 p-4 rounded-2xl font-semibold text-slate-700 text-left">🚗 Request a Car</button>
                 
                 <div class="bg-slate-50 p-4 rounded-2xl flex flex-col gap-3 border border-slate-100 mt-2">
                     <div class="flex items-center gap-2 font-semibold text-slate-700"><span>📝</span><span>Special Requirement</span></div>
                     <div class="flex flex-col gap-2">
                         <textarea id="specialInput" placeholder="Describe your request..." class="w-full px-3 py-3 rounded-xl border border-slate-300 focus:outline-none focus:border-indigo-500 text-slate-800 text-sm h-20"></textarea>
-                        <button onclick="sendManualOrder('specialInput', 'Special Request')" class="bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-md shadow-indigo-200">Send Request</button>
+                        <button onclick="sendManualOrder('specialInput', 'Special Requirement', 'Front Desk')" class="bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-md shadow-indigo-200">Send Request</button>
                     </div>
                 </div>
                 
@@ -152,11 +152,12 @@
             document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
         }
 
-        function sendManualOrder(inputId, label) {
+        // Modificado para recibir también la Categoría (ServiceCategory)
+        function sendManualOrder(inputId, label, serviceCategory) {
             const input = document.getElementById(inputId);
             const val = input.value.trim();
             if(!val) { alert("Please write something."); return; }
-            confirmRequest(`${label}: ${val}`, 'special');
+            confirmRequest(`${label}: ${val}`, serviceCategory);
             input.value = "";
         }
 
@@ -189,8 +190,8 @@
                     body: JSON.stringify({
                         room: roomVal,
                         hotel: hotelLimpio,
-                        category: selectedCategory,
-                        service: selectedService,
+                        category: selectedCategory, // Ahora envía "Room Service", "Front Desk", etc.
+                        service: selectedService,   // Ahora envía "Food Order: 12", etc.
                         status: 'pending'
                     })
                 });
