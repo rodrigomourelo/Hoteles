@@ -8,8 +8,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        
-        /* Animación de Parpadeo para "In Progress" */
         @keyframes blink-animation {
             0% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(0.98); }
@@ -18,18 +16,14 @@
         .blinking-active {
             animation: blink-animation 2s infinite ease-in-out;
             box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-            border: 2px solid #22c55e; /* Green border */
-            color: #15803d; /* Dark green text */
-            background-color: #f0fdf4; /* Light green bg */
+            border: 2px solid #22c55e;
+            color: #15803d;
+            background-color: #f0fdf4;
         }
-
         .role-badge { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
-        
-        /* Transiciones suaves */
-        .dashboard-theme { transition: background-color 0.5s ease, border-color 0.5s ease; }
     </style>
 </head>
-<body class="bg-slate-100 p-4 sm:p-8 transition-colors duration-500" id="mainBody">
+<body class="bg-slate-100 p-4 sm:p-8" id="mainBody">
 
     <div class="max-w-5xl mx-auto">
         <div id="topHeader" class="flex justify-between items-center mb-8 bg-white p-5 rounded-2xl shadow-sm border-l-8 border-indigo-600 transition-all duration-500">
@@ -48,37 +42,33 @@
                 <div class="text-5xl mb-6">🛡️</div>
                 <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase">Staff Access</h2>
                 <p id="loginHotelLabel" class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">...</p>
-                
                 <input type="password" id="pinInput" placeholder="PIN CODE" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl mb-6 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:border-slate-400 text-slate-800 transition" inputmode="numeric">
-                
                 <button onclick="checkPin()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">UNLOCK SYSTEM</button>
             </div>
         </div>
 
-        <div id="dashboardContent" class="grid gap-4">
-            </div>
-        
+        <div id="dashboardContent" class="grid gap-4"></div>
         <div id="emptyState" class="hidden text-center py-20 opacity-50">
             <div class="inline-block p-6 rounded-full bg-white mb-4 text-4xl shadow-sm">✅</div>
             <p class="text-slate-500 font-bold uppercase tracking-wide">All Clear</p>
         </div>
     </div>
 
-    <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+    <audio id="notifSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
 
     <script>
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // --- CONFIGURACIÓN DE COLORES Y ROLES ---
         const ROLES = {
-            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", theme: "emerald", border: "border-emerald-500", bg: "bg-emerald-50" },
-            "2222": { name: "MAINTENANCE",  filter: "Maintenance",  theme: "red",     border: "border-red-500",     bg: "bg-red-50" },
-            "3333": { name: "KITCHEN",      filter: "Room Service", theme: "violet",  border: "border-violet-500",  bg: "bg-violet-50" },
-            "9999": { name: "RECEPTION",    filter: "ALL",          theme: "blue",    border: "border-blue-600",    bg: "bg-blue-50" }
+            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", theme: "emerald", border: "border-emerald-500" },
+            "2222": { name: "MAINTENANCE",  filter: "Maintenance",  theme: "red",     border: "border-red-500" },
+            "3333": { name: "KITCHEN",      filter: "Room Service", theme: "violet",  border: "border-violet-500" },
+            "9999": { name: "RECEPTION",    filter: "ALL",          theme: "blue",    border: "border-blue-600" }
         };
 
-        // Colores específicos para las tarjetas (independiente del rol)
         const CATEGORY_STYLES = {
             "Housekeeping": { color: "border-emerald-500", icon: "🧹", text: "text-emerald-600" },
             "Maintenance":  { color: "border-red-500",     icon: "🛠️", text: "text-red-600" },
@@ -90,17 +80,12 @@
         const rawHotel = urlParams.get('hotel') || 'Grand Hotel Porto';
         const cleanHotelName = decodeURIComponent(rawHotel).replace(/\+/g, ' ').trim();
 
-        document.addEventListener("DOMContentLoaded", function() {
-            document.getElementById('headerHotelName').innerText = cleanHotelName;
-            document.getElementById('loginHotelLabel').innerText = cleanHotelName;
-
-            const savedPin = localStorage.getItem('hotel_auth_pin');
-            if(savedPin && ROLES[savedPin]) {
-                applyRole(savedPin);
-                document.getElementById('loginScreen').style.display = 'none';
-                startFetching();
+        // 1. Pedir permiso para Notificaciones Push al iniciar
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission();
             }
-        });
+        }
 
         function checkPin() {
             const pin = document.getElementById('pinInput').value;
@@ -108,6 +93,12 @@
                 localStorage.setItem('hotel_auth_pin', pin);
                 applyRole(pin);
                 document.getElementById('loginScreen').style.display = 'none';
+                
+                // IMPORTANTE: Reproducir un silencio para "despertar" el audio en móviles
+                const audio = document.getElementById('notifSound');
+                audio.play().then(() => { audio.pause(); audio.currentTime = 0; });
+                
+                requestNotificationPermission(); // Pedir permiso al hacer click
                 startFetching();
             } else {
                 alert("Incorrect PIN");
@@ -115,15 +106,12 @@
             }
         }
 
-        // Aplica el tema visual (Colores) según quién entró
         function applyRole(pin) {
             const role = ROLES[pin];
             const badge = document.getElementById('roleLabel');
             badge.innerText = role.name;
             badge.className = `role-badge text-white ml-2 bg-${role.theme}-600`;
             badge.style.display = 'inline-block';
-            
-            // Cambiar color del borde del header
             const header = document.getElementById('topHeader');
             header.className = header.className.replace(/border-\w+-\d+/, role.border);
         }
@@ -146,56 +134,64 @@
             return isToday ? timeStr : `${date.getDate()}/${date.getMonth()+1} - ${timeStr}`;
         }
 
-        let lastCount = 0;
+        let lastRequestIds = new Set();
 
         async function fetchRequests() {
             try {
-                // 1. Traemos TODOS los pedidos (quitamos status=pending para traer progress y done tambien)
-                // Ordenamos por fecha descendente
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&hotel=eq.${encodeURIComponent(cleanHotelName)}&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
-                
                 const allData = await response.json();
-                
-                // 2. Filtros de Lógica
                 const userPin = localStorage.getItem('hotel_auth_pin');
                 const userRole = ROLES[userPin];
                 const now = new Date();
 
                 const filteredData = allData.filter(req => {
-                    // A. Filtro por Rol (Categoría)
                     if (userRole.filter !== "ALL" && req.category !== userRole.filter) return false;
-
-                    // B. Filtro de Tiempo (Regla de 48 horas para finalizados)
                     if (req.status === 'done') {
                         const createdDate = new Date(req.created_at);
                         const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
-                        if (hoursDiff > 48) return false; // Ocultar si es viejo
+                        if (hoursDiff > 48) return false;
                     }
-
                     return true;
                 });
 
+                // --- LÓGICA DE NOTIFICACIÓN NUEVA ---
+                const currentPendingIds = filteredData.filter(r => r.status === 'pending').map(r => r.id);
+                
+                // Si hay un ID nuevo que no estaba antes, notificamos
+                let hasNew = false;
+                currentPendingIds.forEach(id => {
+                    if (!lastRequestIds.has(id)) {
+                        hasNew = true;
+                        // Mostrar notificación de navegador (Push)
+                        const newReq = filteredData.find(r => r.id === id);
+                        if (Notification.permission === "granted") {
+                            new Notification(`Nuevo Pedido: Hab ${newReq.room}`, {
+                                body: `${newReq.category}: ${newReq.service}`,
+                                icon: 'https://cdn-icons-png.flaticon.com/512/290/290441.png'
+                            });
+                        }
+                    }
+                });
+
+                if (hasNew && lastRequestIds.size !== 0) {
+                    const audio = document.getElementById('notifSound');
+                    audio.currentTime = 0;
+                    audio.play().catch(e => console.log("Audio bloqueado por el navegador"));
+                }
+                
+                // Actualizar el set de IDs conocidos
+                lastRequestIds = new Set(currentPendingIds);
+
                 const container = document.getElementById('dashboardContent');
                 container.innerHTML = "";
-
-                // Sonido solo si hay nuevos pendientes
-                const pendingCount = filteredData.filter(r => r.status === 'pending').length;
-                if (pendingCount > lastCount && lastCount !== 0) {
-                    document.getElementById('notifSound').play().catch(e => console.log("Audio bloq"));
-                }
-                lastCount = pendingCount;
-
                 if (filteredData.length === 0) {
                     document.getElementById('emptyState').classList.remove('hidden');
                 } else {
                     document.getElementById('emptyState').classList.add('hidden');
+                    filteredData.forEach(req => renderCard(req, container));
                 }
-
-                filteredData.forEach(req => {
-                    renderCard(req, container);
-                });
 
             } catch (error) {
                 console.error("Error:", error);
@@ -203,63 +199,34 @@
         }
 
         function renderCard(req, container) {
-            // Estilos según categoría del pedido
             const style = CATEGORY_STYLES[req.category] || { color: "border-slate-300", icon: "🛎️", text: "text-slate-600" };
-            
-            // Lógica de Botones según Estado
             let actionButtons = '';
             let opacityClass = 'opacity-100';
 
             if (req.status === 'pending') {
-                // Botón gris "In Progress"
-                actionButtons = `
-                    <button onclick="updateStatus(${req.id}, 'progress')" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider">
-                        In Progress
-                    </button>
-                `;
+                actionButtons = `<button onclick="updateStatus(${req.id}, 'progress')" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider">In Progress</button>`;
             } else if (req.status === 'progress') {
-                // Botón Parpadeante + Botón Finalizar
-                actionButtons = `
-                    <div class="flex gap-2 w-full sm:w-auto">
-                        <button class="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider cursor-default blinking-active">
-                            In Progress
-                        </button>
-                        <button onclick="updateStatus(${req.id}, 'done')" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider shadow-lg">
-                            Finish
-                        </button>
-                    </div>
-                `;
+                actionButtons = `<div class="flex gap-2 w-full sm:w-auto">
+                    <button class="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider blinking-active">In Progress</button>
+                    <button onclick="updateStatus(${req.id}, 'done')" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider shadow-lg">Finish</button>
+                </div>`;
             } else if (req.status === 'done') {
-                // Estado finalizado
-                opacityClass = 'opacity-60 grayscale-[0.5]'; // Se ve un poco apagado
-                actionButtons = `
-                    <button class="cursor-default bg-emerald-100 text-emerald-700 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2">
-                        <span>Done</span> 
-                        <span class="text-lg">✓</span>
-                    </button>
-                `;
+                opacityClass = 'opacity-60 grayscale-[0.5]';
+                actionButtons = `<button class="cursor-default bg-emerald-100 text-emerald-700 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2"><span>Done</span> <span class="text-lg">✓</span></button>`;
             }
 
-            const card = `
+            container.innerHTML += `
                 <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4 border-l-[6px] ${style.color} ${opacityClass} transition-all duration-300">
                     <div class="w-full sm:w-auto">
                         <div class="flex items-center gap-2 mb-2">
                             <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
-                            <span class="text-[10px] font-bold ${style.text} uppercase tracking-widest flex items-center gap-1">
-                                ${style.icon} ${req.category}
-                            </span>
+                            <span class="text-[10px] font-bold ${style.text} uppercase tracking-widest flex items-center gap-1">${style.icon} ${req.category}</span>
                         </div>
                         <h3 class="text-xl font-black text-slate-800 leading-tight">${req.service}</h3>
-                        <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">
-                            📅 ${formatTime(req.created_at)}
-                        </p>
+                        <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">📅 ${formatTime(req.created_at)}</p>
                     </div>
-                    <div class="w-full sm:w-auto flex justify-end">
-                        ${actionButtons}
-                    </div>
-                </div>
-            `;
-            container.innerHTML += card;
+                    <div class="w-full sm:w-auto flex justify-end">${actionButtons}</div>
+                </div>`;
         }
 
         async function updateStatus(id, newStatus) {
@@ -268,7 +235,7 @@
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
-            fetchRequests(); // Actualizar interfaz inmediatamente
+            fetchRequests();
         }
     </script>
 </body>
