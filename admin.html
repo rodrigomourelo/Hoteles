@@ -3,53 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Dashboard</title>
+    <title>Hotel Dashboard Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        
+        /* Animación de Parpadeo para "In Progress" */
+        @keyframes blink-animation {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(0.98); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        .blinking-active {
+            animation: blink-animation 2s infinite ease-in-out;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+            border: 2px solid #22c55e; /* Green border */
+            color: #15803d; /* Dark green text */
+            background-color: #f0fdf4; /* Light green bg */
+        }
+
         .role-badge { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
+        
+        /* Transiciones suaves */
+        .dashboard-theme { transition: background-color 0.5s ease, border-color 0.5s ease; }
     </style>
 </head>
-<body class="bg-slate-100 p-4 sm:p-8">
+<body class="bg-slate-100 p-4 sm:p-8 transition-colors duration-500" id="mainBody">
 
-    <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+    <div class="max-w-5xl mx-auto">
+        <div id="topHeader" class="flex justify-between items-center mb-8 bg-white p-5 rounded-2xl shadow-sm border-l-8 border-indigo-600 transition-all duration-500">
             <div>
                 <h1 class="text-2xl font-black text-slate-900 tracking-tight">DASHBOARD</h1>
                 <div class="flex items-center gap-2">
-                    <h2 id="headerHotelName" class="text-sm text-indigo-600 font-bold uppercase tracking-widest">...</h2>
+                    <h2 id="headerHotelName" class="text-sm font-bold uppercase tracking-widest text-slate-500">...</h2>
                     <span id="roleLabel" class="role-badge bg-slate-800 text-white hidden">...</span>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-slate-100 text-slate-500 hover:text-red-600 px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition border border-slate-200">SALIR 🔒</button>
+            <button onclick="logout()" class="bg-slate-50 text-slate-400 hover:text-red-500 px-5 py-3 rounded-xl font-bold text-xs shadow-sm border border-slate-100 transition">SALIR 🔒</button>
         </div>
 
         <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-            <div class="bg-white p-8 rounded-[32px] shadow-2xl max-w-sm w-full text-center">
-                <div class="text-4xl mb-4">🔐</div>
-                <h2 class="text-xl font-black text-slate-800 mb-2">STAFF ACCESS</h2>
-                <p id="loginHotelLabel" class="text-indigo-500 text-xs font-bold uppercase tracking-widest mb-6">...</p>
+            <div class="bg-white p-10 rounded-[40px] shadow-2xl max-w-sm w-full text-center border-4 border-slate-100">
+                <div class="text-5xl mb-6">🛡️</div>
+                <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase">Staff Access</h2>
+                <p id="loginHotelLabel" class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">...</p>
                 
-                <input type="password" id="pinInput" placeholder="ENTER PIN" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl mb-4 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:border-indigo-500 text-slate-800" inputmode="numeric">
+                <input type="password" id="pinInput" placeholder="PIN CODE" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl mb-6 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:border-slate-400 text-slate-800 transition" inputmode="numeric">
                 
-                <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-indigo-200 active:scale-95 transition">UNLOCK</button>
-                
-                <div class="mt-6 text-[10px] text-slate-400 font-medium grid grid-cols-2 gap-2 text-left">
-                    <span>🧹 1111 - Housekeeping</span>
-                    <span>🛠️ 2222 - Maintenance</span>
-                    <span>🍽️ 3333 - Kitchen</span>
-                    <span>🛎️ 9999 - Reception (Master)</span>
-                </div>
+                <button onclick="checkPin()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">UNLOCK SYSTEM</button>
             </div>
         </div>
 
         <div id="dashboardContent" class="grid gap-4">
             </div>
         
-        <div id="emptyState" class="hidden text-center py-20">
-            <div class="inline-block p-4 rounded-full bg-slate-200 mb-4 text-2xl">💤</div>
-            <p class="text-slate-400 font-bold">No pending requests for your department.</p>
+        <div id="emptyState" class="hidden text-center py-20 opacity-50">
+            <div class="inline-block p-6 rounded-full bg-white mb-4 text-4xl shadow-sm">✅</div>
+            <p class="text-slate-500 font-bold uppercase tracking-wide">All Clear</p>
         </div>
     </div>
 
@@ -59,25 +70,30 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // --- SISTEMA DE ROLES ---
+        // --- CONFIGURACIÓN DE COLORES Y ROLES ---
         const ROLES = {
-            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", color: "bg-emerald-600" },
-            "2222": { name: "MAINTENANCE", filter: "Maintenance", color: "bg-rose-600" },
-            "3333": { name: "KITCHEN", filter: "Room Service", color: "bg-amber-600" },
-            "9999": { name: "RECEPTION", filter: "ALL", color: "bg-slate-800" }
+            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", theme: "emerald", border: "border-emerald-500", bg: "bg-emerald-50" },
+            "2222": { name: "MAINTENANCE",  filter: "Maintenance",  theme: "red",     border: "border-red-500",     bg: "bg-red-50" },
+            "3333": { name: "KITCHEN",      filter: "Room Service", theme: "violet",  border: "border-violet-500",  bg: "bg-violet-50" },
+            "9999": { name: "RECEPTION",    filter: "ALL",          theme: "blue",    border: "border-blue-600",    bg: "bg-blue-50" }
         };
 
-        // Capturar hotel de la URL
+        // Colores específicos para las tarjetas (independiente del rol)
+        const CATEGORY_STYLES = {
+            "Housekeeping": { color: "border-emerald-500", icon: "🧹", text: "text-emerald-600" },
+            "Maintenance":  { color: "border-red-500",     icon: "🛠️", text: "text-red-600" },
+            "Room Service": { color: "border-violet-500",  icon: "🍽️", text: "text-violet-600" },
+            "Front Desk":   { color: "border-blue-600",    icon: "🛎️", text: "text-blue-600" }
+        };
+
         const urlParams = new URLSearchParams(window.location.search);
         const rawHotel = urlParams.get('hotel') || 'Grand Hotel Porto';
         const cleanHotelName = decodeURIComponent(rawHotel).replace(/\+/g, ' ').trim();
 
-        // Inicialización
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('headerHotelName').innerText = cleanHotelName;
             document.getElementById('loginHotelLabel').innerText = cleanHotelName;
 
-            // Verificar si ya está logueado
             const savedPin = localStorage.getItem('hotel_auth_pin');
             if(savedPin && ROLES[savedPin]) {
                 applyRole(savedPin);
@@ -88,24 +104,28 @@
 
         function checkPin() {
             const pin = document.getElementById('pinInput').value;
-            
             if (ROLES[pin]) {
                 localStorage.setItem('hotel_auth_pin', pin);
                 applyRole(pin);
                 document.getElementById('loginScreen').style.display = 'none';
                 startFetching();
             } else {
-                alert("PIN Incorrecto / Wrong PIN");
+                alert("Incorrect PIN");
                 document.getElementById('pinInput').value = "";
             }
         }
 
+        // Aplica el tema visual (Colores) según quién entró
         function applyRole(pin) {
             const role = ROLES[pin];
             const badge = document.getElementById('roleLabel');
             badge.innerText = role.name;
-            badge.className = `role-badge text-white ml-2 ${role.color}`;
+            badge.className = `role-badge text-white ml-2 bg-${role.theme}-600`;
             badge.style.display = 'inline-block';
+            
+            // Cambiar color del borde del header
+            const header = document.getElementById('topHeader');
+            header.className = header.className.replace(/border-\w+-\d+/, role.border);
         }
 
         function logout() {
@@ -118,93 +138,63 @@
             setInterval(fetchRequests, 5000); 
         }
 
-        // Formato de Fecha Inteligente
         function formatTime(isoString) {
             const date = new Date(isoString);
             const today = new Date();
-            const isToday = date.getDate() === today.getDate() &&
-                            date.getMonth() === today.getMonth() &&
-                            date.getFullYear() === today.getFullYear();
-
+            const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth();
             const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            if (isToday) {
-                return timeStr;
-            } else {
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                return `${day}/${month} - ${timeStr}`;
-            }
+            return isToday ? timeStr : `${date.getDate()}/${date.getMonth()+1} - ${timeStr}`;
         }
 
         let lastCount = 0;
 
         async function fetchRequests() {
             try {
-                // 1. Traemos TODOS los pendientes de ESTE hotel
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&status=eq.pending&hotel=eq.${encodeURIComponent(cleanHotelName)}&order=created_at.desc`, {
+                // 1. Traemos TODOS los pedidos (quitamos status=pending para traer progress y done tambien)
+                // Ordenamos por fecha descendente
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&hotel=eq.${encodeURIComponent(cleanHotelName)}&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 
                 const allData = await response.json();
                 
-                // 2. FILTRAMOS según el Rol del usuario
+                // 2. Filtros de Lógica
                 const userPin = localStorage.getItem('hotel_auth_pin');
                 const userRole = ROLES[userPin];
-                
-                // Si es RECEPTION (9999) ve todo, si no, filtramos por categoría
+                const now = new Date();
+
                 const filteredData = allData.filter(req => {
-                    if (userRole.filter === "ALL") return true; // Recepción ve todo
-                    return req.category === userRole.filter;    // Los demás solo su área
+                    // A. Filtro por Rol (Categoría)
+                    if (userRole.filter !== "ALL" && req.category !== userRole.filter) return false;
+
+                    // B. Filtro de Tiempo (Regla de 48 horas para finalizados)
+                    if (req.status === 'done') {
+                        const createdDate = new Date(req.created_at);
+                        const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
+                        if (hoursDiff > 48) return false; // Ocultar si es viejo
+                    }
+
+                    return true;
                 });
 
                 const container = document.getElementById('dashboardContent');
                 container.innerHTML = "";
 
-                // Sonido solo si hay nuevos pedidos EN ESTA VISTA
-                if (filteredData.length > lastCount && lastCount !== 0) {
+                // Sonido solo si hay nuevos pendientes
+                const pendingCount = filteredData.filter(r => r.status === 'pending').length;
+                if (pendingCount > lastCount && lastCount !== 0) {
                     document.getElementById('notifSound').play().catch(e => console.log("Audio bloq"));
                 }
-                lastCount = filteredData.length;
+                lastCount = pendingCount;
 
                 if (filteredData.length === 0) {
                     document.getElementById('emptyState').classList.remove('hidden');
-                    return;
                 } else {
                     document.getElementById('emptyState').classList.add('hidden');
                 }
 
                 filteredData.forEach(req => {
-                    // Colores visuales de las tarjetas
-                    let borderClass = "border-l-8 border-indigo-500";
-                    let icon = "🛎️";
-                    
-                    if(req.category === 'Room Service') { borderClass = "border-l-8 border-amber-500"; icon = "🍽️"; }
-                    if(req.category === 'Maintenance') { borderClass = "border-l-8 border-rose-500"; icon = "🛠️"; }
-                    if(req.category === 'Housekeeping') { borderClass = "border-l-8 border-emerald-500"; icon = "🧹"; }
-                    if(req.category === 'Front Desk') { borderClass = "border-l-8 border-indigo-500"; icon = "🛎️"; }
-
-                    const card = `
-                        <div class="bg-white p-5 rounded-2xl shadow-sm flex justify-between items-center ${borderClass} animate-fade-in">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
-                                        ${icon} ${req.category}
-                                    </span>
-                                </div>
-                                <h3 class="text-xl font-black text-slate-800 leading-tight">${req.service}</h3>
-                                <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">
-                                    📅 ${formatTime(req.created_at)}
-                                </p>
-                            </div>
-                            <button onclick="markDone(${req.id})" class="ml-4 bg-slate-50 hover:bg-green-50 text-slate-400 hover:text-green-600 p-4 rounded-xl transition-all active:scale-95 border border-slate-100 group">
-                                <span class="font-black text-xs uppercase group-hover:hidden">Finish</span>
-                                <span class="hidden group-hover:inline text-xl">✓</span>
-                            </button>
-                        </div>
-                    `;
-                    container.innerHTML += card;
+                    renderCard(req, container);
                 });
 
             } catch (error) {
@@ -212,13 +202,73 @@
             }
         }
 
-        async function markDone(id) {
+        function renderCard(req, container) {
+            // Estilos según categoría del pedido
+            const style = CATEGORY_STYLES[req.category] || { color: "border-slate-300", icon: "🛎️", text: "text-slate-600" };
+            
+            // Lógica de Botones según Estado
+            let actionButtons = '';
+            let opacityClass = 'opacity-100';
+
+            if (req.status === 'pending') {
+                // Botón gris "In Progress"
+                actionButtons = `
+                    <button onclick="updateStatus(${req.id}, 'progress')" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider">
+                        In Progress
+                    </button>
+                `;
+            } else if (req.status === 'progress') {
+                // Botón Parpadeante + Botón Finalizar
+                actionButtons = `
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        <button class="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider cursor-default blinking-active">
+                            In Progress
+                        </button>
+                        <button onclick="updateStatus(${req.id}, 'done')" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider shadow-lg">
+                            Finish
+                        </button>
+                    </div>
+                `;
+            } else if (req.status === 'done') {
+                // Estado finalizado
+                opacityClass = 'opacity-60 grayscale-[0.5]'; // Se ve un poco apagado
+                actionButtons = `
+                    <button class="cursor-default bg-emerald-100 text-emerald-700 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2">
+                        <span>Done</span> 
+                        <span class="text-lg">✓</span>
+                    </button>
+                `;
+            }
+
+            const card = `
+                <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4 border-l-[6px] ${style.color} ${opacityClass} transition-all duration-300">
+                    <div class="w-full sm:w-auto">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
+                            <span class="text-[10px] font-bold ${style.text} uppercase tracking-widest flex items-center gap-1">
+                                ${style.icon} ${req.category}
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-black text-slate-800 leading-tight">${req.service}</h3>
+                        <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">
+                            📅 ${formatTime(req.created_at)}
+                        </p>
+                    </div>
+                    <div class="w-full sm:w-auto flex justify-end">
+                        ${actionButtons}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        }
+
+        async function updateStatus(id, newStatus) {
             await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?id=eq.${id}`, {
                 method: 'PATCH',
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'done' })
+                body: JSON.stringify({ status: newStatus })
             });
-            fetchRequests();
+            fetchRequests(); // Actualizar interfaz inmediatamente
         }
     </script>
 </body>
