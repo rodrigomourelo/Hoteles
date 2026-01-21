@@ -8,28 +8,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .role-badge { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
-<body class="bg-slate-100 p-8">
+<body class="bg-slate-100 p-4 sm:p-8">
 
     <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
+        <div class="flex justify-between items-center mb-8 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
             <div>
-                <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
-                <h2 id="headerHotelName" class="text-xl text-indigo-600 font-semibold">Cargando Hotel...</h2>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight">DASHBOARD</h1>
+                <div class="flex items-center gap-2">
+                    <h2 id="headerHotelName" class="text-sm text-indigo-600 font-bold uppercase tracking-widest">...</h2>
+                    <span id="roleLabel" class="role-badge bg-slate-800 text-white hidden">...</span>
+                </div>
             </div>
-            <button onclick="logout()" class="bg-white text-slate-600 px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-slate-50">Logout</button>
+            <button onclick="logout()" class="bg-slate-100 text-slate-500 hover:text-red-600 px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition border border-slate-200">SALIR 🔒</button>
         </div>
 
-        <div id="loginScreen" class="bg-white p-8 rounded-2xl shadow-xl max-w-sm mx-auto mt-20 text-center">
-            <h2 class="text-2xl font-bold mb-2">Acceso Hotel</h2>
-            <p id="loginHotelLabel" class="text-slate-500 mb-6">...</p>
-            <input type="password" id="pinInput" placeholder="Enter PIN" class="w-full p-3 border rounded-xl mb-4 text-center text-2xl tracking-widest">
-            <button onclick="checkPin()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold">Entrar</button>
+        <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
+            <div class="bg-white p-8 rounded-[32px] shadow-2xl max-w-sm w-full text-center">
+                <div class="text-4xl mb-4">🔐</div>
+                <h2 class="text-xl font-black text-slate-800 mb-2">STAFF ACCESS</h2>
+                <p id="loginHotelLabel" class="text-indigo-500 text-xs font-bold uppercase tracking-widest mb-6">...</p>
+                
+                <input type="password" id="pinInput" placeholder="ENTER PIN" class="w-full p-4 bg-slate-50 border-2 border-slate-100 rounded-2xl mb-4 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:border-indigo-500 text-slate-800" inputmode="numeric">
+                
+                <button onclick="checkPin()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-indigo-200 active:scale-95 transition">UNLOCK</button>
+                
+                <div class="mt-6 text-[10px] text-slate-400 font-medium grid grid-cols-2 gap-2 text-left">
+                    <span>🧹 1111 - Housekeeping</span>
+                    <span>🛠️ 2222 - Maintenance</span>
+                    <span>🍽️ 3333 - Kitchen</span>
+                    <span>🛎️ 9999 - Reception (Master)</span>
+                </div>
+            </div>
         </div>
 
-        <div id="dashboardContent" class="hidden grid gap-4">
+        <div id="dashboardContent" class="grid gap-4">
             </div>
+        
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="inline-block p-4 rounded-full bg-slate-200 mb-4 text-2xl">💤</div>
+            <p class="text-slate-400 font-bold">No pending requests for your department.</p>
+        </div>
     </div>
 
     <audio id="notifSound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
@@ -38,54 +59,75 @@
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
-        // Capturar hotel de la URL y limpiar
+        // --- SISTEMA DE ROLES ---
+        const ROLES = {
+            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", color: "bg-emerald-600" },
+            "2222": { name: "MAINTENANCE", filter: "Maintenance", color: "bg-rose-600" },
+            "3333": { name: "KITCHEN", filter: "Room Service", color: "bg-amber-600" },
+            "9999": { name: "RECEPTION", filter: "ALL", color: "bg-slate-800" }
+        };
+
+        // Capturar hotel de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const rawHotel = urlParams.get('hotel') || 'Grand Hotel Porto';
         const cleanHotelName = decodeURIComponent(rawHotel).replace(/\+/g, ' ').trim();
 
+        // Inicialización
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('headerHotelName').innerText = cleanHotelName;
             document.getElementById('loginHotelLabel').innerText = cleanHotelName;
 
-            if(localStorage.getItem('hotel_auth') === 'true') {
-                showDashboard();
+            // Verificar si ya está logueado
+            const savedPin = localStorage.getItem('hotel_auth_pin');
+            if(savedPin && ROLES[savedPin]) {
+                applyRole(savedPin);
+                document.getElementById('loginScreen').style.display = 'none';
+                startFetching();
             }
         });
 
         function checkPin() {
             const pin = document.getElementById('pinInput').value;
-            if(pin === "1234") {
-                localStorage.setItem('hotel_auth', 'true');
-                showDashboard();
+            
+            if (ROLES[pin]) {
+                localStorage.setItem('hotel_auth_pin', pin);
+                applyRole(pin);
+                document.getElementById('loginScreen').style.display = 'none';
+                startFetching();
             } else {
-                alert("PIN Incorrecto");
+                alert("PIN Incorrecto / Wrong PIN");
+                document.getElementById('pinInput').value = "";
             }
         }
 
+        function applyRole(pin) {
+            const role = ROLES[pin];
+            const badge = document.getElementById('roleLabel');
+            badge.innerText = role.name;
+            badge.className = `role-badge text-white ml-2 ${role.color}`;
+            badge.style.display = 'inline-block';
+        }
+
         function logout() {
-            localStorage.removeItem('hotel_auth');
+            localStorage.removeItem('hotel_auth_pin');
             location.reload();
         }
 
-        function showDashboard() {
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('dashboardContent').classList.remove('hidden');
+        function startFetching() {
             fetchRequests();
             setInterval(fetchRequests, 5000); 
         }
 
-        // Función auxiliar para formatear la fecha
+        // Formato de Fecha Inteligente
         function formatTime(isoString) {
             const date = new Date(isoString);
             const today = new Date();
-            
             const isToday = date.getDate() === today.getDate() &&
                             date.getMonth() === today.getMonth() &&
                             date.getFullYear() === today.getFullYear();
 
             const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
-            // Si es hoy, solo muestra la hora. Si no, muestra fecha y hora.
             if (isToday) {
                 return timeStr;
             } else {
@@ -99,44 +141,66 @@
 
         async function fetchRequests() {
             try {
-                // Filtramos por el nombre del hotel actual
+                // 1. Traemos TODOS los pendientes de ESTE hotel
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&status=eq.pending&hotel=eq.${encodeURIComponent(cleanHotelName)}&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
                 
-                const data = await response.json();
+                const allData = await response.json();
+                
+                // 2. FILTRAMOS según el Rol del usuario
+                const userPin = localStorage.getItem('hotel_auth_pin');
+                const userRole = ROLES[userPin];
+                
+                // Si es RECEPTION (9999) ve todo, si no, filtramos por categoría
+                const filteredData = allData.filter(req => {
+                    if (userRole.filter === "ALL") return true; // Recepción ve todo
+                    return req.category === userRole.filter;    // Los demás solo su área
+                });
+
                 const container = document.getElementById('dashboardContent');
                 container.innerHTML = "";
 
-                if (data.length > lastCount && lastCount !== 0) {
+                // Sonido solo si hay nuevos pedidos EN ESTA VISTA
+                if (filteredData.length > lastCount && lastCount !== 0) {
                     document.getElementById('notifSound').play().catch(e => console.log("Audio bloq"));
                 }
-                lastCount = data.length;
+                lastCount = filteredData.length;
 
-                if (data.length === 0) {
-                    container.innerHTML = `<div class="text-center text-slate-400 py-10">No hay pedidos pendientes</div>`;
+                if (filteredData.length === 0) {
+                    document.getElementById('emptyState').classList.remove('hidden');
                     return;
+                } else {
+                    document.getElementById('emptyState').classList.add('hidden');
                 }
 
-                data.forEach(req => {
-                    // Colores según categoría (puedes ajustar)
-                    let borderClass = "border-l-4 border-indigo-500";
-                    if(req.category === 'Room Service') borderClass = "border-l-4 border-amber-500";
-                    if(req.category === 'Maintenance') borderClass = "border-l-4 border-rose-500";
-                    if(req.category === 'Housekeeping') borderClass = "border-l-4 border-emerald-500";
+                filteredData.forEach(req => {
+                    // Colores visuales de las tarjetas
+                    let borderClass = "border-l-8 border-indigo-500";
+                    let icon = "🛎️";
+                    
+                    if(req.category === 'Room Service') { borderClass = "border-l-8 border-amber-500"; icon = "🍽️"; }
+                    if(req.category === 'Maintenance') { borderClass = "border-l-8 border-rose-500"; icon = "🛠️"; }
+                    if(req.category === 'Housekeeping') { borderClass = "border-l-8 border-emerald-500"; icon = "🧹"; }
+                    if(req.category === 'Front Desk') { borderClass = "border-l-8 border-indigo-500"; icon = "🛎️"; }
 
                     const card = `
-                        <div class="bg-white p-6 rounded-xl shadow-sm flex justify-between items-center ${borderClass}">
-                            <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
-                                    <span class="text-xs font-medium text-slate-400 uppercase tracking-wide">• ${req.category || 'General'}</span>
+                        <div class="bg-white p-5 rounded-2xl shadow-sm flex justify-between items-center ${borderClass} animate-fade-in">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                                        ${icon} ${req.category}
+                                    </span>
                                 </div>
-                                <h3 class="text-xl font-bold text-slate-800">${req.service}</h3>
-                                <p class="text-sm text-slate-400 mt-1">🕒 ${formatTime(req.created_at)}</p>
+                                <h3 class="text-xl font-black text-slate-800 leading-tight">${req.service}</h3>
+                                <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">
+                                    📅 ${formatTime(req.created_at)}
+                                </p>
                             </div>
-                            <button onclick="markDone(${req.id})" class="bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 px-4 py-2 rounded-lg font-bold transition">
-                                ✓ Done
+                            <button onclick="markDone(${req.id})" class="ml-4 bg-slate-50 hover:bg-green-50 text-slate-400 hover:text-green-600 p-4 rounded-xl transition-all active:scale-95 border border-slate-100 group">
+                                <span class="font-black text-xs uppercase group-hover:hidden">Finish</span>
+                                <span class="hidden group-hover:inline text-xl">✓</span>
                             </button>
                         </div>
                     `;
@@ -151,11 +215,7 @@
         async function markDone(id) {
             await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?id=eq.${id}`, {
                 method: 'PATCH',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'done' })
             });
             fetchRequests();
