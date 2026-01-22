@@ -3,55 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Dashboard Pro</title>
+    <title>Hotel Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        @keyframes blink-animation {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(0.98); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        .blinking-active {
-            animation: blink-animation 2s infinite ease-in-out;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .blinking-active { 
+            animation: blink 1.5s infinite; 
+            background-color: #f0fdf4;
             border: 2px solid #22c55e;
             color: #15803d;
-            background-color: #f0fdf4;
         }
-        .role-badge { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 800; padding: 4px 8px; border-radius: 6px; }
     </style>
 </head>
-<body class="bg-slate-100 p-4 sm:p-8" id="mainBody">
+<body class="bg-slate-100 p-4 sm:p-8">
 
-    <div class="max-w-5xl mx-auto">
-        <div id="topHeader" class="flex justify-between items-center mb-8 bg-white p-5 rounded-2xl shadow-sm border-l-8 border-indigo-600 transition-all duration-500">
+    <div class="max-w-4xl mx-auto">
+        <div id="topHeader" class="flex justify-between items-center mb-8">
             <div>
-                <h1 class="text-2xl font-black text-slate-900 tracking-tight">DASHBOARD</h1>
+                <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
                 <div class="flex items-center gap-2">
-                    <h2 id="headerHotelName" class="text-sm font-bold uppercase tracking-widest text-slate-500">...</h2>
-                    <span id="roleLabel" class="role-badge bg-slate-800 text-white hidden">...</span>
+                    <h2 id="headerHotelName" class="text-xl text-indigo-600 font-semibold uppercase tracking-tight">Cargando Hotel...</h2>
+                    <span id="roleLabel" class="hidden px-2 py-1 rounded text-[10px] font-black text-white uppercase tracking-widest"></span>
                 </div>
             </div>
-            <button onclick="logout()" class="bg-slate-50 text-slate-400 hover:text-red-500 px-5 py-3 rounded-xl font-bold text-xs shadow-sm border border-slate-100 transition">SALIR 🔒</button>
+            <button onclick="logout()" class="bg-white text-slate-600 px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-slate-50 border border-slate-200">Logout</button>
         </div>
 
-        <div id="loginScreen" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center p-4">
-            <div class="bg-white p-10 rounded-[40px] shadow-2xl max-w-sm w-full text-center border-4 border-slate-100">
-                <div class="text-5xl mb-6">🛡️</div>
-                <h2 class="text-2xl font-black text-slate-800 mb-2 uppercase">Staff Access</h2>
-                <p id="loginHotelLabel" class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-8">...</p>
-                <input type="password" id="pinInput" placeholder="PIN CODE" class="w-full p-4 bg-slate-50 border-2 border-slate-200 rounded-2xl mb-6 text-center text-3xl font-bold tracking-[0.5em] focus:outline-none focus:border-slate-400 text-slate-800 transition" inputmode="numeric">
-                <button onclick="checkPin()" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg shadow-xl active:scale-95 transition">UNLOCK SYSTEM</button>
-            </div>
+        <div id="loginScreen" class="fixed inset-0 bg-slate-100 z-50 flex items-center justify-center p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-full text-center">
+                <h2 class="text-2xl font-bold mb-2 text-slate-800">Acceso Staff</h2>
+                <p id="loginHotelLabel" class="text-indigo-600 font-bold mb-6 uppercase tracking-widest text-sm">...</p>
+                <input type="password" id="pinInput" placeholder="Enter PIN" class="w-full p-3 border rounded-xl mb-4 text-center text-2xl tracking-widest focus:outline-none focus:border-indigo-500" inputmode="numeric">
+                <button onclick="checkPin()" class="w-full bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg active:scale-95 transition">UNLOCK</button>
+                </div>
         </div>
 
-        <div id="dashboardContent" class="grid gap-4"></div>
-        <div id="emptyState" class="hidden text-center py-20 opacity-50">
-            <div class="inline-block p-6 rounded-full bg-white mb-4 text-4xl shadow-sm">✅</div>
-            <p class="text-slate-500 font-bold uppercase tracking-wide">All Clear</p>
-        </div>
+        <div id="dashboardContent" class="hidden grid gap-4"></div>
+        <div id="emptyState" class="hidden text-center py-20 text-slate-400 font-medium">No hay pedidos pendientes para tu área.</div>
     </div>
 
     <audio id="notifSound" preload="auto">
@@ -63,46 +53,49 @@
         const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBvZHpuaHZheXZ0cmZpdHB5emdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NzgzMDgsImV4cCI6MjA4MTU1NDMwOH0.ezBpNE8-ILLeT1UIynTscconvdaNIC8Pu-z0zASVfUk";
 
         const ROLES = {
-            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", theme: "emerald", border: "border-emerald-500" },
-            "2222": { name: "MAINTENANCE",  filter: "Maintenance",  theme: "red",     border: "border-red-500" },
-            "3333": { name: "KITCHEN",      filter: "Room Service", theme: "violet",  border: "border-violet-500" },
-            "9999": { name: "RECEPTION",    filter: "ALL",          theme: "blue",    border: "border-blue-600" }
+            "1111": { name: "HOUSEKEEPING", filter: "Housekeeping", color: "bg-emerald-500", border: "border-emerald-500" },
+            "2222": { name: "MAINTENANCE",  filter: "Maintenance",  color: "bg-red-500",     border: "border-red-500" },
+            "3333": { name: "KITCHEN",      filter: "Room Service", color: "bg-violet-500",  border: "border-violet-500" },
+            "9999": { name: "RECEPTION",    filter: "ALL",          color: "bg-slate-800",   border: "border-indigo-600" }
         };
 
-        const CATEGORY_STYLES = {
-            "Housekeeping": { color: "border-emerald-500", icon: "🧹", text: "text-emerald-600" },
-            "Maintenance":  { color: "border-red-500",     icon: "🛠️", text: "text-red-600" },
-            "Room Service": { color: "border-violet-500",  icon: "🍽️", text: "text-violet-600" },
-            "Front Desk":   { color: "border-blue-600",    icon: "🛎️", text: "text-blue-600" }
+        const CATEGORY_COLORS = {
+            "Housekeeping": "border-emerald-500",
+            "Maintenance": "border-red-500",
+            "Room Service": "border-violet-500",
+            "Front Desk": "border-indigo-600"
         };
 
         const urlParams = new URLSearchParams(window.location.search);
         const rawHotel = urlParams.get('hotel') || 'Grand Hotel Porto';
         const cleanHotelName = decodeURIComponent(rawHotel).replace(/\+/g, ' ').trim();
 
-        // 1. Pedir permiso para Notificaciones Push al iniciar
-        function requestNotificationPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission();
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById('headerHotelName').innerText = cleanHotelName;
+            document.getElementById('loginHotelLabel').innerText = cleanHotelName;
+            
+            if(localStorage.getItem('hotel_auth_pin')) {
+                applyRole(localStorage.getItem('hotel_auth_pin'));
+                showDashboard();
             }
-        }
+        });
 
         function checkPin() {
             const pin = document.getElementById('pinInput').value;
-            if (ROLES[pin]) {
+            if(ROLES[pin]) {
                 localStorage.setItem('hotel_auth_pin', pin);
-                applyRole(pin);
-                document.getElementById('loginScreen').style.display = 'none';
                 
-                // IMPORTANTE: Reproducir un silencio para "despertar" el audio en móviles
+                // ACTIVACIÓN DE AUDIO PARA MÓVILES
                 const audio = document.getElementById('notifSound');
                 audio.play().then(() => { audio.pause(); audio.currentTime = 0; });
-                
-                requestNotificationPermission(); // Pedir permiso al hacer click
-                startFetching();
+
+                // SOLICITUD DE NOTIFICACIONES PUSH
+                if ("Notification" in window) { Notification.requestPermission(); }
+
+                applyRole(pin);
+                showDashboard();
             } else {
-                alert("Incorrect PIN");
-                document.getElementById('pinInput').value = "";
+                alert("PIN Incorrecto");
             }
         }
 
@@ -110,20 +103,20 @@
             const role = ROLES[pin];
             const badge = document.getElementById('roleLabel');
             badge.innerText = role.name;
-            badge.className = `role-badge text-white ml-2 bg-${role.theme}-600`;
+            badge.className = `px-2 py-1 rounded text-[10px] font-black text-white uppercase tracking-widest ${role.color}`;
             badge.style.display = 'inline-block';
-            const header = document.getElementById('topHeader');
-            header.className = header.className.replace(/border-\w+-\d+/, role.border);
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('dashboardContent').classList.remove('hidden');
+            fetchRequests();
+            setInterval(fetchRequests, 5000);
         }
 
         function logout() {
             localStorage.removeItem('hotel_auth_pin');
             location.reload();
-        }
-
-        function startFetching() {
-            fetchRequests();
-            setInterval(fetchRequests, 5000); 
         }
 
         function formatTime(isoString) {
@@ -134,106 +127,95 @@
             return isToday ? timeStr : `${date.getDate()}/${date.getMonth()+1} - ${timeStr}`;
         }
 
-        let lastRequestIds = new Set();
+        let lastSeenIds = new Set();
 
         async function fetchRequests() {
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?select=*&hotel=eq.${encodeURIComponent(cleanHotelName)}&order=created_at.desc`, {
                     headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
                 });
-                const allData = await response.json();
-                const userPin = localStorage.getItem('hotel_auth_pin');
-                const userRole = ROLES[userPin];
+                const data = await response.json();
+                const pin = localStorage.getItem('hotel_auth_pin');
+                const role = ROLES[pin];
                 const now = new Date();
 
-                const filteredData = allData.filter(req => {
-                    if (userRole.filter !== "ALL" && req.category !== userRole.filter) return false;
+                const filtered = data.filter(req => {
+                    if (role.filter !== "ALL" && req.category !== role.filter) return false;
                     if (req.status === 'done') {
-                        const createdDate = new Date(req.created_at);
-                        const hoursDiff = (now - createdDate) / (1000 * 60 * 60);
-                        if (hoursDiff > 48) return false;
+                        const hours = (now - new Date(req.created_at)) / (1000 * 60 * 60);
+                        if (hours > 48) return false;
                     }
                     return true;
                 });
 
-                // --- LÓGICA DE NOTIFICACIÓN NUEVA ---
-                const currentPendingIds = filteredData.filter(r => r.status === 'pending').map(r => r.id);
-                
-                // Si hay un ID nuevo que no estaba antes, notificamos
+                // --- GESTIÓN DE NOTIFICACIONES ---
+                const pendingNow = filtered.filter(r => r.status === 'pending');
                 let hasNew = false;
-                currentPendingIds.forEach(id => {
-                    if (!lastRequestIds.has(id)) {
+
+                pendingNow.forEach(r => {
+                    if (!lastSeenIds.has(r.id)) {
                         hasNew = true;
-                        // Mostrar notificación de navegador (Push)
-                        const newReq = filteredData.find(r => r.id === id);
                         if (Notification.permission === "granted") {
-                            new Notification(`Nuevo Pedido: Hab ${newReq.room}`, {
-                                body: `${newReq.category}: ${newReq.service}`,
-                                icon: 'https://cdn-icons-png.flaticon.com/512/290/290441.png'
-                            });
+                            new Notification(`Nuevo: Hab ${r.room}`, { body: r.service });
                         }
                     }
                 });
 
-                if (hasNew && lastRequestIds.size !== 0) {
+                if (hasNew && lastSeenIds.size > 0) {
                     const audio = document.getElementById('notifSound');
                     audio.currentTime = 0;
-                    audio.play().catch(e => console.log("Audio bloqueado por el navegador"));
+                    audio.play().catch(() => {});
                 }
-                
-                // Actualizar el set de IDs conocidos
-                lastRequestIds = new Set(currentPendingIds);
+                lastSeenIds = new Set(pendingNow.map(r => r.id));
 
                 const container = document.getElementById('dashboardContent');
                 container.innerHTML = "";
-                if (filteredData.length === 0) {
+
+                if (filtered.length === 0) {
                     document.getElementById('emptyState').classList.remove('hidden');
-                } else {
-                    document.getElementById('emptyState').classList.add('hidden');
-                    filteredData.forEach(req => renderCard(req, container));
+                    return;
                 }
+                document.getElementById('emptyState').classList.add('hidden');
 
-            } catch (error) {
-                console.error("Error:", error);
-            }
+                filtered.forEach(req => {
+                    const borderColor = CATEGORY_COLORS[req.category] || "border-slate-200";
+                    let buttons = '';
+                    let opacity = 'opacity-100';
+
+                    if (req.status === 'pending') {
+                        buttons = `<button onclick="updateStatus(${req.id}, 'progress')" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-lg font-bold text-xs uppercase">In Progress</button>`;
+                    } else if (req.status === 'progress') {
+                        buttons = `
+                            <div class="flex gap-2">
+                                <button class="px-3 py-2 rounded-lg font-bold text-xs uppercase blinking-active">In Progress</button>
+                                <button onclick="updateStatus(${req.id}, 'done')" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs uppercase">Finish</button>
+                            </div>`;
+                    } else {
+                        opacity = 'opacity-50 grayscale';
+                        buttons = `<span class="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg font-bold text-xs">DONE ✓</span>`;
+                    }
+
+                    container.innerHTML += `
+                        <div class="bg-white p-5 rounded-xl shadow-sm flex justify-between items-center border-l-8 ${borderColor} ${opacity}">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded uppercase">Room ${req.room}</span>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">• ${req.category}</span>
+                                </div>
+                                <h3 class="text-xl font-bold text-slate-800">${req.service}</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mt-1 tracking-wider">${formatTime(req.created_at)}</p>
+                            </div>
+                            <div>${buttons}</div>
+                        </div>`;
+                });
+            } catch (e) { console.error(e); }
         }
 
-        function renderCard(req, container) {
-            const style = CATEGORY_STYLES[req.category] || { color: "border-slate-300", icon: "🛎️", text: "text-slate-600" };
-            let actionButtons = '';
-            let opacityClass = 'opacity-100';
-
-            if (req.status === 'pending') {
-                actionButtons = `<button onclick="updateStatus(${req.id}, 'progress')" class="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-500 px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider">In Progress</button>`;
-            } else if (req.status === 'progress') {
-                actionButtons = `<div class="flex gap-2 w-full sm:w-auto">
-                    <button class="flex-1 sm:flex-none px-4 py-3 rounded-xl font-bold text-xs uppercase tracking-wider blinking-active">In Progress</button>
-                    <button onclick="updateStatus(${req.id}, 'done')" class="flex-1 sm:flex-none bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase transition tracking-wider shadow-lg">Finish</button>
-                </div>`;
-            } else if (req.status === 'done') {
-                opacityClass = 'opacity-60 grayscale-[0.5]';
-                actionButtons = `<button class="cursor-default bg-emerald-100 text-emerald-700 px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider flex items-center gap-2"><span>Done</span> <span class="text-lg">✓</span></button>`;
-            }
-
-            container.innerHTML += `
-                <div class="bg-white p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4 border-l-[6px] ${style.color} ${opacityClass} transition-all duration-300">
-                    <div class="w-full sm:w-auto">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">Room ${req.room}</span>
-                            <span class="text-[10px] font-bold ${style.text} uppercase tracking-widest flex items-center gap-1">${style.icon} ${req.category}</span>
-                        </div>
-                        <h3 class="text-xl font-black text-slate-800 leading-tight">${req.service}</h3>
-                        <p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-wide">📅 ${formatTime(req.created_at)}</p>
-                    </div>
-                    <div class="w-full sm:w-auto flex justify-end">${actionButtons}</div>
-                </div>`;
-        }
-
-        async function updateStatus(id, newStatus) {
+        async function updateStatus(id, status) {
             await fetch(`${SUPABASE_URL}/rest/v1/hotel_requests?id=eq.${id}`, {
                 method: 'PATCH',
                 headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ status: status })
             });
             fetchRequests();
         }
