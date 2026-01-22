@@ -53,7 +53,7 @@
                     Desbloquear Sistema
                 </button>
                 
-                <p class="mt-6 text-[10px] text-slate-400 font-medium max-w-[200px] mx-auto leading-relaxed">
+                <p class="mt-6 text-[10px] text-slate-400 font-medium max-w-[200px] mx-auto leading-relaxed text-balance">
                     Al ingresar, la pantalla se mantendrá encendida para recibir alertas en tiempo real.
                 </p>
             </div>
@@ -72,10 +72,11 @@
     </audio>
 
     <script>
-        // --- 1. REGISTRO PWA ---
+        // --- 1. REGISTRO PWA Y SERVICE WORKER ---
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js')
-            .then(() => console.log('Service Worker Registrado'));
+            .then(reg => console.log('Service Worker Registrado con éxito', reg))
+            .catch(err => console.log('Error al registrar Service Worker', err));
         }
 
         const SUPABASE_URL = "https://podznhvayvtrfitpyzgk.supabase.co";
@@ -103,7 +104,7 @@
             if ('wakeLock' in navigator) {
                 try {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake Lock activo');
+                    console.log('Wake Lock activo: Pantalla encendida');
                 } catch (err) { console.log('Error WakeLock:', err); }
             }
         }
@@ -131,7 +132,7 @@
         function forceEnableNotifs() {
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") {
-                    new Notification("Sistema Activado", { body: "Recibirás alertas aquí." });
+                    new Notification("Sistema Activado", { body: "Las alertas llegarán a este dispositivo." });
                     document.getElementById('notifStatus').classList.add('hidden');
                 }
             });
@@ -142,12 +143,11 @@
             if(ROLES[pin]) {
                 localStorage.setItem('hotel_auth_pin', pin);
                 
-                // Activar audio, notificaciones y pantalla
+                // Activar audio y permisos
                 const audio = document.getElementById('notifSound');
                 audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(()=>{});
+                
                 forceEnableNotifs();
-                requestWakeLock();
-
                 applyRole(pin);
                 showDashboard();
             } else {
@@ -164,16 +164,29 @@
             badge.style.display = 'inline-block';
         }
 
+        // --- FUNCIÓN SHOWDASHBOARD ACTUALIZADA PARA ANDROID ---
         function showDashboard() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('dashboardContent').classList.remove('hidden');
+            
+            // Forzar pantalla encendida
+            requestWakeLock();
+
+            // Sincronizar Service Worker para que Android esté listo
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.ready.then(function(registration) {
+                    console.log('Service Worker listo para notificaciones de fondo');
+                });
+            }
+
             fetchRequests();
             setInterval(fetchRequests, 5000);
             
-            // Re-activar WakeLock si se minimizó y volvió
+            // Mantener viva la conexión si se cambia de pestaña
             document.addEventListener('visibilitychange', async () => {
-                if (wakeLock !== null && document.visibilityState === 'visible') {
+                if (document.visibilityState === 'visible') {
                     await requestWakeLock();
+                    fetchRequests();
                 }
             });
         }
@@ -212,14 +225,15 @@
                     return true;
                 });
 
-                // Notificaciones
+                // Lógica de Notificaciones
                 const pendingNow = filtered.filter(r => r.status === 'pending');
                 let hasNew = false;
                 pendingNow.forEach(r => {
                     if (!lastSeenIds.has(r.id)) {
                         hasNew = true;
                         if (Notification.permission === "granted") {
-                            new Notification(`Habitación ${r.room}`, { body: `${r.category}: ${r.service}` });
+                            // Enviar notificación simple
+                            new Notification(`Habitación ${r.room}`, { body: `${r.category}: ${r.service}`, icon: 'https://cdn-icons-png.flaticon.com/512/290/290441.png' });
                         }
                     }
                 });
@@ -228,12 +242,10 @@
                     const audio = document.getElementById('notifSound');
                     audio.currentTime = 0;
                     audio.play().catch(()=>{});
-                    // Vibración
-                    if(navigator.vibrate) navigator.vibrate([200, 100, 200]);
+                    if(navigator.vibrate) navigator.vibrate([300, 100, 300]);
                 }
                 lastSeenIds = new Set(pendingNow.map(r => r.id));
 
-                // Renderizado
                 const container = document.getElementById('dashboardContent');
                 container.innerHTML = "";
                 if (filtered.length === 0) {
